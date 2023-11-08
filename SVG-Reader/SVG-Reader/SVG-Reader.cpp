@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <objidl.h>
 #include "Drawing.h"
+#include "Rotate.h"
 #pragma comment (lib,"Gdiplus.lib")
 #define MAX_LOADSTRING 100
 
@@ -130,6 +131,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     ULONG_PTR token;
     GdiplusStartup(&token, &gdiplusStartupInput, nullptr);
     vector<int> a, b, c, d, e, f, g, h;
+    int max = 958, min = 425;
     switch (message)
     {
     case WM_COMMAND:
@@ -169,7 +171,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DrawLine(hdc, 90, 30, 110, 10, 1, 0, 0, 255, 25);
             c = { 850, 958, 958, 850, 742, 742 };
             d = { 75, 137, 262, 325, 262, 137 };
-            DrawPolygon(hdc, c, d, 0.5, 153, 204, 255, static_cast<int>(255 * 0.7), 255, 0, 102, 10);
+            DrawPolygon(hdc, c, d, 0.5, 153, 204, 255,0.7, 255, 0, 102, 10);
             e = { 350, 379, 469, 397, 423, 350, 277, 303, 231, 321 };
             f = { 75, 161, 161, 215, 301, 250, 301, 215, 161, 161 };
             DrawPolygon(hdc, e, f, 0.6, 255, 255, 0, 0.7, 255, 0, 0, 10);

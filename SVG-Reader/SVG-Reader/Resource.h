@@ -16,6 +16,7 @@
 #define IDM_ZOOM_OUT                    121 
 #define IDM_ROTATE_RIGHT                122 
 #define IDM_ROTATE_LEFT                 123 
+#define IDM_DEFAULT                     124
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
