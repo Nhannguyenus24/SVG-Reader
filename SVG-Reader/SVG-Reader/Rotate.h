@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include "Object.h"
 using namespace std;
 struct Rotate { // thay doi toa do vector cac hinh ve
 	int max_height, max_length;
