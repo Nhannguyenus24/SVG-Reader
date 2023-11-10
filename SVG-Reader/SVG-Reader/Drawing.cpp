@@ -112,6 +112,7 @@ VOID Drawing::DrawText(HDC hdc, int x, int y, string text, float f_alpha, int f_
 }
 
 VOID Drawing::mainDrawing() {
+    read(file_name, line_list, rect_list, ellip_list, cir_list);
     if (rotate != 0) {
         // transform vector
     }

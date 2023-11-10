@@ -21,7 +21,7 @@ struct Drawing {
 	//vector<polygon> polyg_list;
 	//vector<polyline> polyl_list;
 	//vector<text> text_list;
-	string file_name;
+	string file_name = "";
 	float rotate; // 0 - 90 - 180 - 270 - 360
 	HDC hdc;
 
