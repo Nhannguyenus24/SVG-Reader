@@ -117,6 +117,10 @@ VOID Drawing::mainDrawing() {
         // transform vector
     }
     Graphics graphics(hdc);
+   for (const auto& rect : rect_list) {
+       
+        DrawRectangle(hdc, rect.start.x, rect.start.y, rect.width, rect.height, rect.fillColor.alpha, rect.fillColor.red, rect.fillColor.green, rect.fillColor.blue, rect.strokeColor.alpha, rect.strokeColor.red, rect.strokeColor.green, rect.strokeColor.blue, rect.strokeWidth);
+    }
     for (const auto& line : line_list) {
         DrawLine(hdc, line.start.x, line.start.y, line.end.x, line.end.y, line.strokeColor.alpha, line.strokeColor.red, line.strokeColor.green, line.strokeColor.blue, line.strokeWidth);
     }

@@ -67,6 +67,11 @@ void readRectangle(string name, string value, rectangle& rect) {
     else if (name == "stroke-width") {
         rect.strokeWidth = stoi(value);
     }
+    else if (name == "stroke-opacity") {
+        rect.strokeColor.alpha = stof(value);
+    }
+    if (rect.strokeColor.alpha == 0)
+        rect.strokeColor.alpha = 1;
 }
 
 void readEllipse(string name, string value, ellipse& elli) {

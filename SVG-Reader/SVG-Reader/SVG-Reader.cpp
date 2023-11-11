@@ -155,13 +155,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Drawing dr("sample.svg", hdc);
-            //DrawRectangle(hdc, 20, 20, 800, 400, 0.2, 200, 100, 150, 1, 55, 55, 55, 2);
-            //DrawRectangle(hdc, 0, 0, 200, 50, 0, 0, 0, 0, 1, 255, 0, 0, 2);
+            //dr.rotate = 90;
+            dr.mainDrawing();
+            
+            
             //// TODO: Add any drawing code that uses hdc here...
-            /*DrawRectangle(hdc, 25, 25, 800, 400, 0.01, 0, 0, 0, 1, 200, 200, 200, 2);
-            DrawRectangle(hdc, 20, 20, 800, 400, 0.2, 200, 100, 150, 1, 55, 55, 55, 2);
-            DrawRectangle(hdc, 0, 0, 200, 50, 0, 0, 0, 0, 1, 255, 0, 0, 2);
-            DrawCircle(hdc, 200, 300, 100, 0.5, 255, 255, 0, 0.7, 0, 255, 255, 10);
+            /*dr.DrawRectangle(hdc, 25, 25, 800, 400, 0.01, 0, 0, 0, 1, 200, 200, 200, 2);
+            dr.DrawRectangle(hdc, 20, 20, 800, 400, 0.2, 200, 100, 150, 1, 55, 55, 55, 2);
+            dr.DrawRectangle(hdc, 0, 0, 200, 50, 0, 0, 0, 0, 1, 255, 0, 0, 2);*/
+            /*DrawCircle(hdc, 200, 300, 100, 0.5, 255, 255, 0, 0.7, 0, 255, 255, 10);
             DrawEllipse(hdc, 500, 100, 100, 50, 0.5, 0, 255, 0, 0.7, 255, 255, 0, 3);
             a = { 5, 15, 15, 25, 25, 35, 35, 45, 45, 55, 55, 65, 65, 75, 75, 85, 85, 95, 95, 105, 105, 115 };
             b = { 37, 37, 32, 32, 37, 37, 25, 25, 37, 37, 17, 17, 37, 37, 10, 10, 37, 37, 2, 2, 37, 37 };
