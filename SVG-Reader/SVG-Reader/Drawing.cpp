@@ -152,7 +152,6 @@ VOID Drawing::mainDrawing() {
                     }
                 }
                 t.mainRotateL(line_list, rect_list, ellip_list, cir_list, polyg_list, polyl_list, text_list);
-                
             }
             else {
                 if (i == 0) {
