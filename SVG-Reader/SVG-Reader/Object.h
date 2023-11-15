@@ -34,7 +34,7 @@ public:
 	int strokeWidth;
 	line() {
 		stroke_opacity = 1;
-		strokeWidth = 1;
+		strokeWidth = 0;
 	}
 };
 
@@ -49,7 +49,7 @@ public:
 	int strokeWidth;
 	rectangle() {
 		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 1;
+		strokeWidth = 0;
 	}
 };
 
@@ -63,7 +63,7 @@ public:
 	int strokeWidth;
 	ellipse() {
 		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 1;
+		strokeWidth = 0;
 	}
 };
 
@@ -77,7 +77,7 @@ public:
 	int strokeWidth;
 	circle() {
 		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 1;
+		strokeWidth = 0;
 	}
 };
 
@@ -90,7 +90,7 @@ public:
 	int strokeWidth;
 	polygon() {
 		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 1;
+		strokeWidth = 0;
 	}
 };
 
@@ -103,8 +103,8 @@ public:
 	int strokeWidth;
 	polyline() {
 		fill_opacity = 1;
-		stroke_opacity = 0;
-		strokeWidth = 1;
+		stroke_opacity = 1;
+		strokeWidth = 0;
 	}
 };
 
