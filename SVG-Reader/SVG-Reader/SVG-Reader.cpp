@@ -14,7 +14,7 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-float scale = 0;
+float scale = 1;
 int Rotate = 0;
 int scrollX = 0;
 int scrollY = 0;
@@ -148,11 +148,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DestroyWindow(hWnd);
                 break;
             case IDM_ZOOM_IN:
-                scale += 0.05;
+                scale *= 1.1;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_ZOOM_OUT:
-                scale -= 0.05;
+                scale *= 0.9;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_DEFAULT:
@@ -179,7 +179,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Drawing dr("sample.svg", hdc);
-            dr.zoom_scale += scale;
+            dr.zoom_scale = scale;
             if (Rotate == 360 || Rotate == -360) {
                 Rotate = 0;
             }
