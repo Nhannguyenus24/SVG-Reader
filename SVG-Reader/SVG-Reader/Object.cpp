@@ -3,15 +3,43 @@
 
 color readRGB(string value) {
     color colour;
-    stringstream ss(value);
-    string temp = "";
-    getline(ss, temp, '(');
-    getline(ss, temp, ',');
-    colour.red = stoi(temp);
-    getline(ss, temp, ',');
-    colour.green = stoi(temp);
-    getline(ss, temp, ')');
-    colour.blue = stoi(temp);
+    if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') {
+
+        stringstream ss(value);
+        string temp = "";
+        getline(ss, temp, '(');
+        getline(ss, temp, ',');
+        colour.red = stoi(temp);
+        getline(ss, temp, ',');
+        colour.green = stoi(temp);
+        getline(ss, temp, ')');
+        colour.blue = stoi(temp);
+    }
+    else {
+        ifstream file("rgb.txt");
+        if (file.is_open()) {
+            string line;
+            while (getline(file, line)) {
+                stringstream ss(line);
+                string buffer, name, rgb;
+                getline(ss, buffer, '"');
+                getline(ss, name, '"');
+                if (name == value) {
+                    getline(ss, buffer, '(');
+                    ss >> colour.red;
+                    ss >> buffer;
+                    ss >> colour.green;
+                    ss >> buffer;
+                    ss >> colour.blue;
+                    break;
+                }
+                else {
+                    getline(ss, buffer, '}');
+                }
+            }
+        }
+        file.close();
+    }
     return colour;
 }
 
