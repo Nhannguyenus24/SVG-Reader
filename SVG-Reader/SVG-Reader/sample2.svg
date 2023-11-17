@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <rect x="10" y="10" width="30" height="30" fill="rgb(255,0,0)" />
+    <rect x="50" y="10" width="30" height="30" fill="rgb(0,255,0)" />
+    <circle cx="100" cy="25" r="15" fill="rgb(0,0,255)" />
+    <ellipse cx="150" cy="25" rx="15" ry="10" fill="rgb(255,255,0)" />
+    <line x1="10" y1="60" x2="40" y2="80" stroke="rgb(255,0,255)" stroke-width="2" />
+    <line x1="50" y1="60" x2="80" y2="80" stroke="rgb(0,255,255)" stroke-width="2" />
+    <polygon points="110,60 140,60 125,90" fill="rgb(128,128,128)" />
+    <polyline points="150,60 180,60 165,90" stroke="rgb(128,0,128)" stroke-width="2" />
+    <text x="10" y="120" font-family="Arial" font-size="14" fill="rgb(0,128,0)">Hello SVG!</text>
+</svg>
