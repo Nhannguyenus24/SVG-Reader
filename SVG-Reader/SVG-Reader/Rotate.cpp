@@ -85,10 +85,10 @@ Rotate::Rotate(vector<line> line_list, vector<rectangle> rect_list, vector<ellip
 			max_h = findMaxValue(obj.yP);
 	}
 	for (auto& obj : text_list) {
-		if (obj.x + obj.text_.length() > max_l)
-			max_l = obj.x + obj.text_.length();
-		if (obj.y > max_h)
-			max_h = obj.y;
+		if (obj.start.x + obj.text_.length() > max_l)
+			max_l = obj.start.x + obj.text_.length();
+		if (obj.start.y > max_h)
+			max_h = obj.start.y;
 	}
 	max_height = max_h, max_length = max_l;
 }
@@ -116,7 +116,7 @@ void Rotate::mainRotateR(vector<line>& line_list, vector<rectangle>& rect_list, 
 		rotateRight(obj.xP, obj.yP, max_length, max_height);
 	}
 	for (auto& obj : text_list) {
-		rotateR(obj.x, obj.y, max_height);
+		rotateR(obj.start.x, obj.start.y, max_height);
 	}
 	swap(max_height, max_length);
 }
@@ -143,7 +143,7 @@ void Rotate::mainRotateL(vector<line>& line_list, vector<rectangle>& rect_list, 
 		rotateLeft(obj.xP, obj.yP, max_length, max_height);
 	}
 	for (auto& obj : text_list) {
-		rotateL(obj.x, obj.y, max_length);
+		rotateL(obj.start.x, obj.start.y, max_length);
 	}
 	swap(max_height, max_length);
 }

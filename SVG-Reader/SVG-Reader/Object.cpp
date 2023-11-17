@@ -113,10 +113,10 @@ void readPolyline(string name, string value, polyline& polyline) {
 
 void readText(string name, string value, text& text) {
     if (name == "x") {
-        text.x = stoi(value);
+        text.start.x = stoi(value);
     }
     else if (name == "y") {
-        text.y = stoi(value);
+        text.start.y = stoi(value);
     }
     else if (name == "font-size") {
         text.font_size = stoi(value);

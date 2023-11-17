@@ -205,7 +205,7 @@ VOID Drawing::mainDrawing() {
             pl++;
         }
         else if (t < text_list.size() && text_list[t].ordinal == i) {
-            DrawText(hdc, text_list[t].x, text_list[t].y, text_list[t].text_, text_list[t].fill_opacity, text_list[t].fillColor.red, text_list[t].fillColor.green, text_list[t].fillColor.blue, text_list[t].font_size, text_list[t].font_family, text_list[t].italic);
+            DrawText(hdc, text_list[t].start.x, text_list[t].start.y, text_list[t].text_, text_list[t].fill_opacity, text_list[t].fillColor.red, text_list[t].fillColor.green, text_list[t].fillColor.blue, text_list[t].font_size, text_list[t].font_family, text_list[t].italic);
             t++;
         }
     }

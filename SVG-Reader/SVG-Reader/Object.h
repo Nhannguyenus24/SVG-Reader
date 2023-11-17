@@ -15,8 +15,10 @@ using namespace std;
 class color {
 public:
 	int red, green, blue;
+	float opacity;
 	color() {
 		red = green = blue = 0;
+		opacity = 1;
 	}
 };
 
@@ -111,7 +113,7 @@ public:
 class text {
 public:
 	int ordinal;
-	int x, y;
+	point start;
 	int font_size;
 	string text_;
 	string font_family;
