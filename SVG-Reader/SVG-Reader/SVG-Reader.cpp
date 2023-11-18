@@ -1,20 +1,14 @@
 ﻿// SVG-Reader.cpp : Defines the entry point for the application.
 //
-
-#include "framework.h"
 #include "SVG-Reader.h"
-#include <windows.h>
-#include <objidl.h>
-#include "Drawing.h"
-#include "Rotate.h"
-#pragma comment (lib,"Gdiplus.lib")
+#include "Object.h"
 #define MAX_LOADSTRING 100
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-float scale = 1;
+double scale = 1;
 int Rotate = 0;
 int scrollX = 0;
 int scrollY = 0;
@@ -178,14 +172,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DrawAgain:
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            Drawing dr("sample.svg", hdc);
-            dr.zoom_scale = scale;
-            if (Rotate == 360 || Rotate == -360) {
-                Rotate = 0;
+            Graphics graphics(hdc);
+            graphics.ScaleTransform(scale, scale);
+            graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+            vector<shape*> shapes = read_file("sample.svg");
+            for (int i = 0; i < shapes.size(); i++) {
+                shapes[i]->draw(graphics);
             }
-            dr.rotate += Rotate;
-            dr.mainDrawing();
-            
             EndPaint(hWnd, &ps);
         }
         break;

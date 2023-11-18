@@ -409,8 +409,8 @@ VOID text::draw(Graphics graphics) {
     wstring_convert<codecvt_utf8<wchar_t>> converter;
     wstring wFontFamily = converter.from_bytes(font_family);
     FontFamily  fontFamily(wFontFamily.c_str());
-    Font font(&fontFamily, font_size, italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
-    PointF pointF(start.x, start.y);
+    Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
+    PointF pointF(static_cast<REAL>(start.x), static_cast<REAL>(start.y));
     SolidBrush fillBrush(Color(static_cast<int>(fill_color.opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     const wstring wstr = wstring(text_.begin(), text_.end());
     graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
