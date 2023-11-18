@@ -7,10 +7,19 @@
 #include <vector>
 #include <string>
 #include <sstream>
-
-using namespace rapidxml;
+#include <windows.h>
+#include <objidl.h>
+#include <gdiplus.h>
+#include <locale>  // Để sử dụng wstring_convert và codecvt_utf8
+#include <codecvt> // Để sử dụng codecvt_utf8
+#include "Object.h"
+#include <algorithm>
 #include "framework.h"
 using namespace std;
+using namespace Gdiplus;
+#pragma comment (lib,"Gdiplus.lib")
+using namespace rapidxml;
+
 
 class color {
 public:
@@ -18,117 +27,81 @@ public:
 	float opacity;
 	color() {
 		red = green = blue = 0;
-		opacity = 1;
+		opacity = 1.0;
 	}
 };
 
 class point {
 public:
 	int x, y;
-};
-
-class line {
-public:
-	int ordinal;
-	point start, end;
-	color strokeColor;
-	float stroke_opacity;
-	int strokeWidth;
-	line() {
-		stroke_opacity = 1;
-		strokeWidth = 0;
+	point() {
+		x = 0, y = 0;
 	}
 };
 
-class rectangle {
+class shape {
 public:
-	int ordinal;
 	point start;
+	color stroke_color, fill_color;
+	int stroke_width;
+	shape() {
+		stroke_width = 0;
+	}
+	virtual void draw(Graphics graphics) = 0;
+};
+
+
+class line : public shape {
+public:
+	point end;
+	void draw(Graphics graphics) override;
+};
+
+class rectangle : public shape {
+public:
 	int width, height;
-	color fillColor; // màu bên trong hình chữ nhật
-	color strokeColor; // màu đường viền 
-	float fill_opacity, stroke_opacity;
-	int strokeWidth;
-	rectangle() {
-		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 0;
-	}
+	void draw(Graphics graphics) override;
 };
 
-class ellipse {
+class ellipse : public shape {
 public:
-	int ordinal;
-	point center;
 	int rx, ry; // bán kính chiều ngang, dọc
-	color strokeColor, fillColor;
-	float fill_opacity, stroke_opacity;
-	int strokeWidth;
-	ellipse() {
-		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 0;
-	}
+	void draw(Graphics graphics) override;
 };
 
-class circle {
+class circle : public shape {
 public:
-	int ordinal;
 	point center;
 	int r; // bán kính 
-	color fillColor, strokeColor;
-	float fill_opacity, stroke_opacity;
-	int strokeWidth;
-	circle() {
-		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 0;
-	}
+	void draw(Graphics graphics) override;
 };
 
-class polygon {
+class polygon : public shape {
 public:
-	int ordinal;
-	vector<int> xP, yP;
-	color fillColor, strokeColor;
-	float fill_opacity, stroke_opacity;
-	int strokeWidth;
-	polygon() {
-		fill_opacity = stroke_opacity = 1;
-		strokeWidth = 0;
-	}
+	vector<point> p;
+	void draw(Graphics graphics) override;
 };
 
-class polyline {
+class polyline : public shape{
 public:
-	int ordinal;
-	vector<int> xP, yP;
-	color fillColor, strokeColor;
-	float fill_opacity, stroke_opacity;
-	int strokeWidth;
-	polyline() {
-		fill_opacity = 1;
-		stroke_opacity = 1;
-		strokeWidth = 0;
-	}
+	vector<point> p;
+	void draw(Graphics graphics) override;
 };
 
-class text {
+class text : public shape {
 public:
-	int ordinal;
-	point start;
 	int font_size;
 	string text_;
 	string font_family;
-	color fillColor;
-	float fill_opacity;
 	bool italic;
 	text() {
 		text_ = "";
 		font_family = "Times New Roman";
 		italic = false;
-		fill_opacity = 1;
 	}
+	void draw(Graphics graphics) override;
 };
 
-void read(string svgFileName, vector<line>& line_list, vector<rectangle>& rect_list, vector<ellipse>& elli_list, vector<circle>& cir_list, vector<polygon>& polyg_list, vector<polyline>& polyl_list, vector<text>& text_list);
-
+vector<shape*> read_file(string file_name);
 
 #endif

@@ -17,6 +17,10 @@
 #define IDM_ROTATE_RIGHT                122 
 #define IDM_ROTATE_LEFT                 123 
 #define IDM_DEFAULT                     124
+#define IDM_UP                          125
+#define IDM_DOWN                        126
+#define IDM_RIGHT                       127
+#define IDM_LEFT                        128
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

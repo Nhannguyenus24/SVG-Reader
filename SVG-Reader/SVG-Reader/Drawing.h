@@ -10,7 +10,6 @@
 #include <codecvt> // Để sử dụng codecvt_utf8
 #include "Object.h"
 #include <algorithm>
-#include "Rotate.h"
 using namespace std;
 using namespace Gdiplus;
 #pragma comment (lib,"Gdiplus.lib")
