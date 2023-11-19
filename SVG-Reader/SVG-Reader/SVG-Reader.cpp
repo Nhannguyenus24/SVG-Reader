@@ -1,7 +1,7 @@
 ﻿// SVG-Reader.cpp : Defines the entry point for the application.
 //
-#include "SVG-Reader.h"
 #include "Object.h"
+#include "resource.h"
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -12,6 +12,7 @@ double scale = 1;
 int Rotate = 0;
 int scrollX = 0;
 int scrollY = 0;
+string path = "default.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -150,8 +151,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_DEFAULT:
-                scale = 0;
+                scale = 1;
                 Rotate = 0;
+                scrollX = 0;
+                scrollY = 0;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_ROTATE_LEFT:
@@ -160,6 +163,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 goto DrawAgain;
             case IDM_ROTATE_RIGHT:
                 Rotate += 90;
+                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                goto DrawAgain;
+            case IDM_UP:
+                scrollY -= 20;
+                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                goto DrawAgain;
+            case IDM_DOWN:
+                scrollY += 20;
+                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                goto DrawAgain;
+            case IDM_RIGHT:
+                scrollX += 20;
+                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                goto DrawAgain;
+            case IDM_LEFT:
+                scrollX -= 20;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             default:
@@ -173,9 +192,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Graphics graphics(hdc);
+            graphics.TranslateTransform(scrollX, scrollY);
             graphics.ScaleTransform(scale, scale);
             graphics.SetSmoothingMode(SmoothingModeAntiAlias);
-            vector<shape*> shapes = read_file("sample.svg");
+            vector<shape*> shapes = read_file(path);
             for (int i = 0; i < shapes.size(); i++) {
                 shapes[i]->draw(graphics);
             }

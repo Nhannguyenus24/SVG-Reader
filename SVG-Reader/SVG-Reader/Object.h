@@ -24,10 +24,8 @@ using namespace rapidxml;
 class color {
 public:
 	int red, green, blue;
-	float opacity;
 	color() {
 		red = green = blue = 0;
-		opacity = 1.0;
 	}
 };
 
@@ -44,48 +42,50 @@ public:
 	point start;
 	color stroke_color, fill_color;
 	int stroke_width;
+	float stroke_opacity, fill_opacity;
 	shape() {
 		stroke_width = 0;
+		stroke_opacity = fill_opacity = 1;
 	}
-	virtual void draw(Graphics graphics) = 0;
+	virtual void draw(Graphics& graphics) = 0;
 };
 
 
 class line : public shape {
 public:
 	point end;
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 class rectangle : public shape {
 public:
 	int width, height;
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 class ellipse : public shape {
 public:
 	int rx, ry; // bán kính chiều ngang, dọc
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 class circle : public shape {
 public:
 	point center;
 	int r; // bán kính 
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 class polygon : public shape {
 public:
 	vector<point> p;
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 class polyline : public shape{
 public:
 	vector<point> p;
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 class text : public shape {
@@ -99,7 +99,7 @@ public:
 		font_family = "Times New Roman";
 		italic = false;
 	}
-	void draw(Graphics graphics) override;
+	void draw(Graphics& graphics) override;
 };
 
 vector<shape*> read_file(string file_name);
