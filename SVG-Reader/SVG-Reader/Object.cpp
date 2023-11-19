@@ -234,7 +234,7 @@ void readCircle(string name, string value, circle* cir) {
     }
 }
 
-vector<shape*> read_file(string file_name) {
+vector<shape*> read_file(string file_name, int& max_width, int& max_height) {
     vector<shape*> shapes;
     ifstream file(file_name);
     if (!file.is_open()) {
@@ -252,76 +252,75 @@ vector<shape*> read_file(string file_name) {
 
     // Lấy nút gốc (root node) của tài liệu
     rapidxml::xml_node<>* root = doc.first_node("svg");
-
+    max_width = 0, max_height = 0;
 
     for (rapidxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
-        cout << "Node name: " << node->name() << endl;
 
         string name = node->name();
         if (name == "line") {
             line* lin = new line();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 readLine(attribute->name(), attribute->value(), lin);
             }
+            lin->get_max(max_width, max_height);
             shapes.push_back(lin);
         }
         else if (name == "rect") {
             rectangle* rect = new rectangle();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 string attribute_name = attribute->name();
                 string attribute_value = attribute->value();
                 readRectangle(attribute_name, attribute_value, rect);
             }
+            rect->get_max(max_width, max_height);
             shapes.push_back(rect);
         }
         else if (name == "ellipse") {
             ellipse* elli = new ellipse();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 readEllipse(attribute->name(), attribute->value(), elli);
             }
+            elli->get_max(max_width, max_height);
             shapes.push_back(elli);
         }
         else if (name == "circle") {
             circle* cir = new circle();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 readCircle(attribute->name(), attribute->value(), cir);
             }
+            cir->get_max(max_width, max_height);
             shapes.push_back(cir);
         }
         else if (name == "polygon") {
             polygon* polyg = new polygon();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 readPolygon(attribute->name(), attribute->value(), polyg);
             }
+            polyg->get_max(max_width, max_height);
             shapes.push_back(polyg);
         }
         else if (name == "polyline") {
             polyline* polyl = new polyline();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 readPolyline(attribute->name(), attribute->value(), polyl);
             }
+            polyl->get_max(max_width, max_height);
             shapes.push_back(polyl);
         }
         else if (name == "text") {
             text* tex = new text();
 
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                cout << "Attribute name: " << attribute->name() << ", Value: " << attribute->value() << endl;
                 readText(attribute->name(), attribute->value(), tex);
             }
             tex->text_ = node->value();
+            tex->get_max(max_width, max_height);
             shapes.push_back(tex);
         }
     }
@@ -335,6 +334,17 @@ VOID line::draw(Graphics& graphics) {
     graphics.DrawLine(&pen, start.x, start.y, end.x, end.y);
 }
 
+void line::get_max(int& max_width, int& max_height) {
+    if (start.x > max_width)
+        max_width = start.x;
+    else if (end.x > max_width)
+        max_width = end.x;
+    if (start.y > max_height)
+        max_width = start.y;
+    else if (end.y > max_height)
+        max_width = end.y;
+}
+
 VOID rectangle::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
@@ -342,6 +352,13 @@ VOID rectangle::draw(Graphics& graphics) {
     graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
     if (stroke_width != 0)
         graphics.DrawRectangle(&pen, start.x, start.y, width, height);
+}
+
+void rectangle::get_max(int& max_width, int& max_height) {
+    if (max_width > start.x + width)
+        max_width = start.x + width;
+    if (max_height > start.y + height)
+        max_height = start.y + height;
 }
 
 VOID circle::draw(Graphics& graphics) {
@@ -353,6 +370,13 @@ VOID circle::draw(Graphics& graphics) {
         graphics.DrawEllipse(&pen, start.x - r, start.y - r, 2 * r, 2 * r);
 }
 
+void circle::get_max(int& max_width, int& max_height) {
+    if (max_width > start.x + r)
+        max_width = start.x + r;
+    if (max_height > start.y + r)
+        max_height = start.y + r;
+}
+
 VOID ellipse::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
@@ -361,6 +385,13 @@ VOID ellipse::draw(Graphics& graphics) {
     graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
+}
+
+void ellipse::get_max(int& max_width, int& max_height) {
+    if (max_width > start.x + rx)
+        max_width = start.x + rx;
+    if (max_height > start.y + ry)
+        max_height = start.y + ry;
 }
 
 VOID polygon::draw(Graphics& graphics) {
@@ -375,6 +406,15 @@ VOID polygon::draw(Graphics& graphics) {
     if (stroke_width != 0)
         graphics.DrawPolygon(&pen, point, static_cast<int>(p.size()));
     delete[] point;
+}
+
+void polygon::get_max(int& max_width, int& max_height) {
+    for (int i = 0; i < p.size(); i++) {
+        if (p[i].x > max_width)
+            max_width = p[i].x;
+        if (p[i].y > max_height)
+            max_height = p[i].y;
+    }
 }
 
 VOID polyline::draw(Graphics& graphics) {
@@ -392,6 +432,15 @@ VOID polyline::draw(Graphics& graphics) {
     delete[] point;
 }
 
+void polyline::get_max(int& max_width, int& max_height) {
+    for (int i = 0; i < p.size(); i++) {
+        if (p[i].x > max_width)
+            max_width = p[i].x;
+        if (p[i].y > max_height)
+            max_height = p[i].y;
+    }
+}
+
 VOID text::draw(Graphics& graphics) {
     wstring_convert<codecvt_utf8<wchar_t>> converter;
     wstring wFontFamily = converter.from_bytes(font_family);
@@ -403,3 +452,29 @@ VOID text::draw(Graphics& graphics) {
     graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
 }
 
+void text::get_max(int& max_width, int& max_height) {
+    if (max_width > start.x + text_.length())
+        max_width = start.x + text_.length();
+    if (max_height > start.y - font_size)
+        max_height = start.y - font_size;
+}
+
+void transform_image(Graphics& graphics, float angle, int width, int height, int scroll_x, int scroll_y, float scale) {
+   
+    // Lưu ý: Sử dụng REAL thay vì static_cast<REAL> để tránh lỗi chuyển đổi không mong muốn.
+
+ // Tính toán tâm của ảnh sau khi áp dụng scroll và scale
+    PointF center(static_cast<REAL>((width / 2 + scroll_x) * scale), static_cast<REAL>((height / 2 + scroll_y) * scale));
+
+    // Áp dụng các biến đổi
+    Matrix transformMatrix;
+    transformMatrix.Translate(scroll_x, scroll_y); // Dịch chuyển trước
+    transformMatrix.Scale(scale, scale);           // Sau đó thay đổi tỷ lệ
+    transformMatrix.RotateAt(angle, center);       // Cuối cùng, xoay tại trọng tâm
+
+    // Áp dụng ma trận biến đổi
+    graphics.SetTransform(&transformMatrix);
+
+    // Cài đặt các thuộc tính khác nếu cần
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+}

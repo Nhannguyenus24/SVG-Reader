@@ -9,10 +9,11 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 double scale = 1;
-int Rotate = 0;
-int scrollX = 0;
-int scrollY = 0;
-string path = "default.svg";
+float Rotate = 0;
+int scroll_x = 0;
+int scroll_y = 0;
+int max_width = 0, max_height = 0;
+string path = "sample.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -153,32 +154,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_DEFAULT:
                 scale = 1;
                 Rotate = 0;
-                scrollX = 0;
-                scrollY = 0;
+                scroll_x = 0;
+                scroll_y = 0;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_ROTATE_LEFT:
-                Rotate -= 90;
+                Rotate -= 30;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_ROTATE_RIGHT:
-                Rotate += 90;
+                Rotate += 30;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_UP:
-                scrollY -= 20;
+                scroll_y -= 20;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_DOWN:
-                scrollY += 20;
+                scroll_y += 20;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_RIGHT:
-                scrollX += 20;
+                scroll_x += 20;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             case IDM_LEFT:
-                scrollX -= 20;
+                scroll_x -= 20;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
             default:
@@ -186,16 +187,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case WM_KEYDOWN:
+    {
+        switch (wParam)
+        {
+            case VK_UP:
+                // Xử lý mũi tên lên
+                scroll_y -= 20;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case VK_DOWN:
+                // Xử lý mũi tên xuống
+                scroll_y += 20;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case VK_LEFT:
+                // Xử lý mũi tên trái
+                scroll_x -= 20;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case VK_RIGHT:
+                // Xử lý mũi tên phải
+                scroll_x += 20;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case 'i': case 'I':
+                scale *= 1.1;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case 'o': case 'O':
+                scale *= 0.9;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case 'r': case 'R':
+                Rotate += 30;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+            case 'l': case 'L':
+                Rotate -= 30;
+                InvalidateRect(hWnd, NULL, TRUE);
+                goto DrawAgain;
+                break;
+                break;
+            case 'd': case 'D':
+                scale = 1;
+                Rotate = 0;
+                scroll_x = 0;
+                scroll_y = 0;
+                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                goto DrawAgain;
+        }
+    }
     case WM_PAINT:
         {
             DrawAgain:
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Graphics graphics(hdc);
-            graphics.TranslateTransform(scrollX, scrollY);
-            graphics.ScaleTransform(scale, scale);
-            graphics.SetSmoothingMode(SmoothingModeAntiAlias);
-            vector<shape*> shapes = read_file(path);
+            transform_image(graphics, Rotate, max_width, max_height, scroll_x, scroll_y, scale);
+            vector<shape*> shapes = read_file(path, max_width, max_height);
             for (int i = 0; i < shapes.size(); i++) {
                 shapes[i]->draw(graphics);
             }
