@@ -331,10 +331,13 @@ vector<shape*> read_file(string file_name, int& max_width, int& max_height) {
 
 VOID line::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     graphics.DrawLine(&pen, start.x, start.y, end.x, end.y);
 }
 
 void line::get_max(int& max_width, int& max_height) {
+
     if (start.x > max_width)
         max_width = start.x;
     else if (end.x > max_width)
@@ -348,7 +351,8 @@ void line::get_max(int& max_width, int& max_height) {
 VOID rectangle::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
     if (stroke_width != 0)
         graphics.DrawRectangle(&pen, start.x, start.y, width, height);
@@ -364,7 +368,8 @@ void rectangle::get_max(int& max_width, int& max_height) {
 VOID circle::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     graphics.FillEllipse(&fillBrush, start.x - r, start.y - r, 2 * r, 2 * r);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - r, start.y - r, 2 * r, 2 * r);
@@ -380,8 +385,8 @@ void circle::get_max(int& max_width, int& max_height) {
 VOID ellipse::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-
-
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
@@ -397,7 +402,8 @@ void ellipse::get_max(int& max_width, int& max_height) {
 VOID polygon::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     Point* point = new Point[p.size()];
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
@@ -419,7 +425,8 @@ void polygon::get_max(int& max_width, int& max_height) {
 
 VOID polyline::draw(Graphics& graphics) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
-
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     Point* point = new Point[p.size()];
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
@@ -448,6 +455,8 @@ VOID text::draw(Graphics& graphics) {
     Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
     PointF pointF(static_cast<REAL>(start.x), static_cast<REAL>(start.y - font_size));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
     const wstring wstr = wstring(text_.begin(), text_.end());
     graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
 }

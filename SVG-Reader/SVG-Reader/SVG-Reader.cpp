@@ -13,7 +13,7 @@ float Rotate = 0;
 int scroll_x = 0;
 int scroll_y = 0;
 int max_width = 0, max_height = 0;
-string path = "sample.svg";
+string path = "sample2.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
