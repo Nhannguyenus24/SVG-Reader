@@ -129,6 +129,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR token;
     GdiplusStartup(&token, &gdiplusStartupInput, nullptr);
+    bool is_dragging = false;
+    POINT last_mouse_position;
     switch (message)
     {
     case WM_COMMAND:
@@ -245,14 +247,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 goto DrawAgain;
         }
     }
+    case WM_MOUSEWHEEL:
+    {
+        short delta = GET_WHEEL_DELTA_WPARAM(wParam);
+        if (delta > 0)
+            scale *= 1.1;
+        else
+            scale *= 0.9;
+        InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+        goto DrawAgain;
+    }
     case WM_PAINT:
         {
             DrawAgain:
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Graphics graphics(hdc);
-            transform_image(graphics, Rotate, max_width, max_height, scroll_x, scroll_y, scale);
             vector<shape*> shapes = read_file(path, max_width, max_height);
+            transform_image(graphics, Rotate, max_width + scroll_x, max_height + scroll_y , scroll_x, scroll_y, scale);
             for (int i = 0; i < shapes.size(); i++) {
                 shapes[i]->draw(graphics);
             }

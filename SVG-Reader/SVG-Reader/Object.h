@@ -14,6 +14,7 @@
 #include <codecvt> // Để sử dụng codecvt_utf8
 #include "Object.h"
 #include <algorithm>
+#include <unordered_map>
 #include "framework.h"
 using namespace std;
 using namespace Gdiplus;
@@ -115,21 +116,18 @@ public:
 	void get_max(int& max_width, int& max_height) override;
 };
 
+class path : public shape {
+public:
+	string data;
+	void draw(Graphics& graphics) override;
+};
+
 class group {
 public:
-	color stroke_color, fill_color;
-	int stroke_width;
-	float stroke_opacity, fill_opacity;
-	point translate;
-	int rotate;
-	float scale_x, scale_y;
-	group() {
-		stroke_width = 0;
-		stroke_opacity = fill_opacity = 1;
-		rotate = 0;
-		scale_x = scale_y = 0;
-	}
+	unordered_map<string, string> attribute;
+	vector<group> group_child;
 };
+
 vector<shape*> read_file(string file_name, int& max_width, int& max_height);
 void transform_image(Graphics& graphics, float angle, int width, int height, int scroll_x, int scroll_y, float scale);
 

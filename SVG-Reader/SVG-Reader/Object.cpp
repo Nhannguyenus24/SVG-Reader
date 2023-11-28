@@ -1,4 +1,5 @@
 ﻿#include "Object.h"
+
 //======================================= Reading area================================================================
 
 color readRGB(string value) {
@@ -384,10 +385,12 @@ vector<shape*> read_file(string file_name, int& max_width, int& max_height) {
 //================================== Drawing area ==========================================================================================================
 
 VOID line::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     graphics.DrawLine(&pen, start.x, start.y, end.x, end.y);
+    graphics.Restore(save);
 }
 
 void line::get_max(int& max_width, int& max_height) {
@@ -403,6 +406,7 @@ void line::get_max(int& max_width, int& max_height) {
 }
 
 VOID rectangle::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     graphics.RotateTransform(rotate);
@@ -410,6 +414,7 @@ VOID rectangle::draw(Graphics& graphics) {
     graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
     if (stroke_width != 0)
         graphics.DrawRectangle(&pen, start.x, start.y, width, height);
+    graphics.Restore(save);
 }
 
 void rectangle::get_max(int& max_width, int& max_height) {
@@ -420,6 +425,7 @@ void rectangle::get_max(int& max_width, int& max_height) {
 }
 
 VOID circle::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     graphics.RotateTransform(rotate);
@@ -427,6 +433,7 @@ VOID circle::draw(Graphics& graphics) {
     graphics.FillEllipse(&fillBrush, start.x - r, start.y - r, 2 * r, 2 * r);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - r, start.y - r, 2 * r, 2 * r);
+    graphics.Restore(save);
 }
 
 void circle::get_max(int& max_width, int& max_height) {
@@ -437,6 +444,7 @@ void circle::get_max(int& max_width, int& max_height) {
 }
 
 VOID ellipse::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     graphics.RotateTransform(rotate);
@@ -444,6 +452,7 @@ VOID ellipse::draw(Graphics& graphics) {
     graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
+    graphics.Restore(save);
 }
 
 void ellipse::get_max(int& max_width, int& max_height) {
@@ -454,6 +463,7 @@ void ellipse::get_max(int& max_width, int& max_height) {
 }
 
 VOID polygon::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     graphics.RotateTransform(rotate);
@@ -466,6 +476,7 @@ VOID polygon::draw(Graphics& graphics) {
     if (stroke_width != 0)
         graphics.DrawPolygon(&pen, point, static_cast<int>(p.size()));
     delete[] point;
+    graphics.Restore(save);
 }
 
 void polygon::get_max(int& max_width, int& max_height) {
@@ -478,6 +489,7 @@ void polygon::get_max(int& max_width, int& max_height) {
 }
 
 VOID polyline::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
@@ -491,6 +503,7 @@ VOID polyline::draw(Graphics& graphics) {
     if (stroke_width != 0)
         graphics.DrawLines(&pen, point, static_cast<int>(p.size()));
     delete[] point;
+    graphics.Restore(save);
 }
 
 void polyline::get_max(int& max_width, int& max_height) {
@@ -503,6 +516,7 @@ void polyline::get_max(int& max_width, int& max_height) {
 }
 
 VOID text::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
     wstring_convert<codecvt_utf8<wchar_t>> converter;
     wstring wFontFamily = converter.from_bytes(font_family);
     FontFamily  fontFamily(wFontFamily.c_str());
@@ -513,6 +527,7 @@ VOID text::draw(Graphics& graphics) {
     graphics.ScaleTransform(scale_x, scale_y);
     const wstring wstr = wstring(text_.begin(), text_.end());
     graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
+    graphics.Restore(save);
 }
 
 void text::get_max(int& max_width, int& max_height) {
@@ -523,7 +538,7 @@ void text::get_max(int& max_width, int& max_height) {
 }
 
 void transform_image(Graphics& graphics, float angle, int width, int height, int scroll_x, int scroll_y, float scale) {
-   
+
     // Lưu ý: Sử dụng REAL thay vì static_cast<REAL> để tránh lỗi chuyển đổi không mong muốn.
 
  // Tính toán tâm của ảnh sau khi áp dụng scroll và scale
