@@ -10,11 +10,11 @@ color readRGB(string value) {
         string temp = "";
         getline(ss, temp, '(');
         getline(ss, temp, ',');
-        colour.red = stoi(temp);
+        colour.red = stof(temp);
         getline(ss, temp, ',');
-        colour.green = stoi(temp);
+        colour.green = stof(temp);
         getline(ss, temp, ')');
-        colour.blue = stoi(temp);
+        colour.blue = stof(temp);
     }
     else {
         ifstream file("rgb.txt");
@@ -50,9 +50,9 @@ void readTransform(string value, point& translate, float& rotate, float& scale_x
     {
         stringstream ss(value.substr(value.find("translate") + 10));
         getline(ss, temp, ',');
-        translate.x = stoi(temp);
+        translate.x = stof(temp);
         getline(ss, temp, ')');
-        translate.y = stoi(temp);
+        translate.y = stof(temp);
     }
     if (value.find("rotate") != string::npos)
     {
@@ -85,9 +85,9 @@ vector<point> readPoints(string value) {
         point p;
         stringstream pointStream(pointStr);
         getline(pointStream, pointStr, ',');
-        p.x = stoi(pointStr);
+        p.x = stof(pointStr);
         getline(pointStream, pointStr, ',');
-        p.y = stoi(pointStr);
+        p.y = stof(pointStr);
         points.push_back(p);
     }
     return points;
@@ -107,7 +107,7 @@ void readPolygon(string name, string value, polygon* polygon) {
         polygon->stroke_color = readRGB(value);
     }
     else if (name == "stroke-width") {
-        polygon->stroke_width = stoi(value);
+        polygon->stroke_width = stof(value);
     }
     else if (name == "points") {
         polygon->p = readPoints(value);
@@ -131,7 +131,7 @@ void readPolyline(string name, string value, polyline* polyline) {
         polyline->stroke_color = readRGB(value);
     }
     else if (name == "stroke-width") {
-        polyline->stroke_width = stoi(value);
+        polyline->stroke_width = stof(value);
     }
     else if (name == "points") {
         polyline->p = readPoints(value);
@@ -143,13 +143,13 @@ void readPolyline(string name, string value, polyline* polyline) {
 
 void readText(string name, string value, text* text) {
     if (name == "x") {
-        text->start.x = stoi(value);
+        text->start.x = stof(value);
     }
     else if (name == "y") {
-        text->start.y = stoi(value);
+        text->start.y = stof(value);
     }
     else if (name == "font-size") {
-        text->font_size = stoi(value);
+        text->font_size = stof(value);
     }
     else if (name == "fill") {
         text->fill_color = readRGB(value);
@@ -170,19 +170,19 @@ void readLine(string name, string value, line* line) {
         line->stroke_color = readRGB(value);
     }
     else if (name == "x1") {
-        line->start.x = stoi(value);
+        line->start.x = stof(value);
     }
     else if (name == "y1") {
-        line->start.y = stoi(value);
+        line->start.y = stof(value);
     }
     else if (name == "x2") {
-        line->end.x = stoi(value);
+        line->end.x = stof(value);
     }
     else if (name == "y2") {
-        line->end.y = stoi(value);
+        line->end.y = stof(value);
     }
     else if (name == "stroke-width") {
-        line->stroke_width = stoi(value);
+        line->stroke_width = stof(value);
     }
     else if (name == "stroke") {
         line->stroke_color = readRGB(value);
@@ -206,19 +206,19 @@ void readRectangle(string name, string value, rectangle* rect) {
         rect->stroke_color = readRGB(value);
     }
     else if (name == "x") {
-        rect->start.x = stoi(value);
+        rect->start.x = stof(value);
     }
     else if (name == "y") {
-        rect->start.y = stoi(value);
+        rect->start.y = stof(value);
     }
     else if (name == "width") {
-        rect->width = stoi(value);
+        rect->width = stof(value);
     }
     else if (name == "height") {
-        rect->height = stoi(value);
+        rect->height = stof(value);
     }
     else if (name == "stroke-width") {
-        rect->stroke_width = stoi(value);
+        rect->stroke_width = stof(value);
     }
     else if (name == "transform") {
         readTransform(value, rect->translate, rect->rotate, rect->scale_x, rect->scale_y);
@@ -239,19 +239,19 @@ void readEllipse(string name, string value, ellipse* elli) {
         elli->stroke_color = readRGB(value);
     }
     else if (name == "cx") {
-        elli->start.x = stoi(value);
+        elli->start.x = stof(value);
     }
     else if (name == "cy") {
-        elli->start.y = stoi(value);
+        elli->start.y = stof(value);
     }
     else if (name == "rx") {
-        elli->rx = stoi(value);
+        elli->rx = stof(value);
     }
     else if (name == "ry") {
-        elli->ry = stoi(value);
+        elli->ry = stof(value);
     }
     else if (name == "stroke-width") {
-        elli->stroke_width = stoi(value);
+        elli->stroke_width = stof(value);
     }
     else if (name == "transform") {
         readTransform(value, elli->translate, elli->rotate, elli->scale_x, elli->scale_y);
@@ -272,23 +272,23 @@ void readCircle(string name, string value, circle* cir) {
         cir->stroke_color = readRGB(value);
     }
     else if (name == "cx") {
-        cir->start.x = stoi(value);
+        cir->start.x = stof(value);
     }
     else if (name == "cy") {
-        cir->start.y = stoi(value);
+        cir->start.y = stof(value);
     }
     else if (name == "r") {
-        cir->r = stoi(value);
+        cir->r = stof(value);
     }
     else if (name == "stroke-width") {
-        cir->stroke_width = stoi(value);
+        cir->stroke_width = stof(value);
     }
     else if (name == "transform") {
         readTransform(value, cir->translate, cir->rotate, cir->scale_x, cir->scale_y);
     }
 }
 
-vector<shape*> read_file(string file_name, int& max_width, int& max_height) {
+vector<shape*> read_file(string file_name, float& max_width, float& max_height) {
     vector<shape*> shapes;
     ifstream file(file_name);
     if (!file.is_open()) {
@@ -393,7 +393,7 @@ VOID line::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void line::get_max(int& max_width, int& max_height) {
+void line::get_max(float& max_width, float& max_height) {
 
     if (start.x > max_width)
         max_width = start.x;
@@ -417,7 +417,7 @@ VOID rectangle::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void rectangle::get_max(int& max_width, int& max_height) {
+void rectangle::get_max(float& max_width, float& max_height) {
     if (max_width > start.x + width)
         max_width = start.x + width;
     if (max_height > start.y + height)
@@ -436,7 +436,7 @@ VOID circle::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void circle::get_max(int& max_width, int& max_height) {
+void circle::get_max(float& max_width, float& max_height) {
     if (max_width > start.x + r)
         max_width = start.x + r;
     if (max_height > start.y + r)
@@ -455,7 +455,7 @@ VOID ellipse::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void ellipse::get_max(int& max_width, int& max_height) {
+void ellipse::get_max(float& max_width, float& max_height) {
     if (max_width > start.x + rx)
         max_width = start.x + rx;
     if (max_height > start.y + ry)
@@ -479,7 +479,7 @@ VOID polygon::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void polygon::get_max(int& max_width, int& max_height) {
+void polygon::get_max(float& max_width, float& max_height) {
     for (int i = 0; i < p.size(); i++) {
         if (p[i].x > max_width)
             max_width = p[i].x;
@@ -506,7 +506,7 @@ VOID polyline::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void polyline::get_max(int& max_width, int& max_height) {
+void polyline::get_max(float& max_width, float& max_height) {
     for (int i = 0; i < p.size(); i++) {
         if (p[i].x > max_width)
             max_width = p[i].x;
@@ -530,7 +530,7 @@ VOID text::draw(Graphics& graphics) {
     graphics.Restore(save);
 }
 
-void text::get_max(int& max_width, int& max_height) {
+void text::get_max(float& max_width, float& max_height) {
     if (max_width > start.x + text_.length())
         max_width = start.x + text_.length();
     if (max_height > start.y - font_size)
