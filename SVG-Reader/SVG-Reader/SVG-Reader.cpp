@@ -8,12 +8,12 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-double scale = 1;
+float scale = 1;
 float Rotate = 0;
-int scroll_x = 0;
-int scroll_y = 0;
-int max_width = 0, max_height = 0;
-string path = "sample2.svg";
+float scroll_x = 0;
+float scroll_y = 0;
+float max_width = 0, max_height = 0;
+string path = "default.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);

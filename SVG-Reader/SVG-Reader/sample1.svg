@@ -8,7 +8,7 @@
     </g>
     <text x="100" y="294" font-family="Arial" font-size="24" fill="black">Venn Diagram</text>
     <g stroke-width='0' fill-opacity="1">
-        <g transform="scale(0.9)">
+        <g transform="scale (0.9)">
             <rect x="290" y="30" width="30" height="10" fill="yellow"/>
             <rect x="320" y="30" width="10" height="30" fill="blue"/>
             <rect x="300" y="60" width="30" height="10" fill="red"/>

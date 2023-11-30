@@ -44,40 +44,48 @@ color readRGB(string value) {
     return colour;
 }
 
-void readTransform(string value, point& translate, float& rotate, float& scale_x, float& scale_y) {
-    string temp;
-    if (value.find("translate") != string::npos)
-    {
-        stringstream ss(value.substr(value.find("translate") + 10));
-        getline(ss, temp, ',');
-        translate.x = stof(temp);
-        getline(ss, temp, ')');
-        translate.y = stof(temp);
-    }
-    if (value.find("rotate") != string::npos)
-    {
-        stringstream ss(value.substr(value.find("rotate") + 7));
-        getline(ss, temp, ')');
-        rotate = stof(temp);
-    }
-    if (value.find("scale") != string::npos) {
-        stringstream ss(value.substr(value.find("scale") + 6));
-        getline(ss, temp, ',');
-        scale_x = stof(temp);
-        if (ss.peek() != ')') {
-            getline(ss, temp, ')');
-            scale_y = stof(temp);
+void readTransform(std::string value, point& translate, float& rotate, float& scale_x, float& scale_y) {
+    std::istringstream ss(value);
+
+    std::string token;
+    while (ss >> token) {
+        if (token == "translate") {
+            ss >> translate.x;
+            ss.ignore(); // Ignore the comma
+            ss >> translate.y;
         }
-        else {
-            ss.clear();
-            ss.str(temp);
-            getline(ss, temp, ')');
-            scale_y = scale_x = stof(temp);
+        else if (token == "rotate") {
+            ss >> rotate;
+        }
+        else if (token == "scale") {
+            ss >> scale_x;
+            if (ss.peek() == ',') {
+                ss.ignore(); // Ignore the comma
+                ss >> scale_y;
+            }
+            else {
+                scale_y = scale_x;
+            }
         }
     }
 }
+
 vector<point> readPoints(string value) {
     vector<point> points;
+
+    // Xóa khoảng trắng ở đầu và cuối chuỗi
+    value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
+
+    // Kiểm tra và loại bỏ dấu cách đầu tiên nếu có
+    if (!value.empty() && value[0] == ' ') {
+        value = value.substr(1);
+    }
+
+    // Kiểm tra và loại bỏ dấu cách cuối cùng nếu có
+    if (!value.empty() && value.back() == ' ') {
+        value = value.substr(0, value.size() - 1);
+    }
+
     stringstream ss(value);
     string temp = "";
     string pointStr;
@@ -101,10 +109,19 @@ void readPolygon(string name, string value, polygon* polygon) {
         polygon->stroke_opacity = stof(value);
     }
     else if (name == "fill") {
+        if (value == "none" || value == "transparent") {
+			polygon->fill_opacity = 0;
+		}
+		else
+			polygon->fill_color = readRGB(value);
         polygon->fill_color = readRGB(value);
     }
     else if (name == "stroke") {
-        polygon->stroke_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+            polygon->stroke_opacity = 0;
+        }
+		else
+            polygon->stroke_color = readRGB(value);
     }
     else if (name == "stroke-width") {
         polygon->stroke_width = stof(value);
@@ -125,10 +142,18 @@ void readPolyline(string name, string value, polyline* polyline) {
         polyline->stroke_opacity = stof(value);
     }
     else if (name == "fill") {
-        polyline->fill_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			polyline->fill_opacity = 0;
+		}
+        else
+            polyline->fill_color = readRGB(value);
     }
     else if (name == "stroke") {
-        polyline->stroke_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			polyline->stroke_opacity = 0;
+		}
+		else
+            polyline->stroke_color = readRGB(value);
     }
     else if (name == "stroke-width") {
         polyline->stroke_width = stof(value);
@@ -152,7 +177,11 @@ void readText(string name, string value, text* text) {
         text->font_size = stof(value);
     }
     else if (name == "fill") {
-        text->fill_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+            text->fill_opacity = 0;
+        }
+		else
+            text->fill_color = readRGB(value);
     }
     else if (name == "font-family") {
         text->font_family = value;
@@ -167,7 +196,11 @@ void readLine(string name, string value, line* line) {
         line->stroke_opacity = stof(value);
     }
     else if (name == "stroke") {
-        line->stroke_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			line->stroke_opacity = 0;
+		}
+        else 
+            line->stroke_color = readRGB(value);
     }
     else if (name == "x1") {
         line->start.x = stof(value);
@@ -184,9 +217,6 @@ void readLine(string name, string value, line* line) {
     else if (name == "stroke-width") {
         line->stroke_width = stof(value);
     }
-    else if (name == "stroke") {
-        line->stroke_color = readRGB(value);
-    }
     else if (name == "transform") {
         readTransform(value, line->translate, line->rotate, line->scale_x, line->scale_y);
     }
@@ -200,10 +230,18 @@ void readRectangle(string name, string value, rectangle* rect) {
         rect->stroke_opacity = stof(value);
     }
     else if (name == "fill") {
-        rect->fill_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+            rect->fill_opacity = 0;
+        }
+        else 
+            rect->fill_color = readRGB(value);
     }
     else if (name == "stroke") {
-        rect->stroke_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			rect->stroke_opacity = 0;
+		}
+		else
+            rect->stroke_color = readRGB(value);
     }
     else if (name == "x") {
         rect->start.x = stof(value);
@@ -233,10 +271,18 @@ void readEllipse(string name, string value, ellipse* elli) {
         elli->stroke_opacity = stof(value);
     }
     else if (name == "fill") {
-        elli->fill_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			elli->fill_opacity = 0;
+		}
+		else
+            elli->fill_color = readRGB(value);
     }
     else if (name == "stroke") {
-        elli->stroke_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+            elli->stroke_opacity = 0;
+        }
+        else 
+            elli->stroke_color = readRGB(value);
     }
     else if (name == "cx") {
         elli->start.x = stof(value);
@@ -266,10 +312,18 @@ void readCircle(string name, string value, circle* cir) {
         cir->stroke_opacity = stof(value);
     }
     else if (name == "fill") {
-        cir->fill_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			cir->fill_opacity = 0;
+		}
+		else 
+			cir->fill_color = readRGB(value);
     }
     else if (name == "stroke") {
-        cir->stroke_color = readRGB(value);
+        if (value == "none" || value == "transparent") {
+			cir->stroke_opacity = 0;
+		}
+		else
+            cir->stroke_color = readRGB(value);
     }
     else if (name == "cx") {
         cir->start.x = stof(value);
@@ -307,13 +361,19 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
     // Lấy nút gốc (root node) của tài liệu
     rapidxml::xml_node<>* root = doc.first_node("svg");
     max_width = 0, max_height = 0;
+    group g;
+    g.traversal_group(root, max_width, max_height, shapes);
+    return shapes;
+}
 
+void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes) {
     for (rapidxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
-
         string name = node->name();
         if (name == "line") {
             line* lin = new line();
-
+            for (const auto& attribute : attributes) {
+				readLine(attribute.first, attribute.second, lin);
+			}
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readLine(attribute->name(), attribute->value(), lin);
             }
@@ -322,7 +382,9 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
         }
         else if (name == "rect") {
             rectangle* rect = new rectangle();
-
+            for (const auto& attribute : attributes) {
+                readRectangle(attribute.first, attribute.second, rect);
+            }
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 string attribute_name = attribute->name();
                 string attribute_value = attribute->value();
@@ -333,7 +395,9 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
         }
         else if (name == "ellipse") {
             ellipse* elli = new ellipse();
-
+            for (const auto& attribute : attributes) {
+				readEllipse(attribute.first, attribute.second, elli);
+			}
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readEllipse(attribute->name(), attribute->value(), elli);
             }
@@ -342,7 +406,9 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
         }
         else if (name == "circle") {
             circle* cir = new circle();
-
+            for (const auto& attribute : attributes) {
+                readCircle(attribute.first, attribute.second, cir);
+            }
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readCircle(attribute->name(), attribute->value(), cir);
             }
@@ -351,7 +417,9 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
         }
         else if (name == "polygon") {
             polygon* polyg = new polygon();
-
+            for (const auto& attribute : attributes) {
+				readPolygon(attribute.first, attribute.second, polyg);
+			}
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readPolygon(attribute->name(), attribute->value(), polyg);
             }
@@ -360,7 +428,9 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
         }
         else if (name == "polyline") {
             polyline* polyl = new polyline();
-
+            for (const auto& attribute : attributes) {
+                readPolyline(attribute.first, attribute.second, polyl);
+            }
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readPolyline(attribute->name(), attribute->value(), polyl);
             }
@@ -369,7 +439,9 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
         }
         else if (name == "text") {
             text* tex = new text();
-
+            for (const auto& attribute : attributes) {
+				readText(attribute.first, attribute.second, tex);
+			}
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readText(attribute->name(), attribute->value(), tex);
             }
@@ -377,10 +449,18 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
             tex->get_max(max_width, max_height);
             shapes.push_back(tex);
         }
+        else if (name == "g") {
+			group new_group;
+            for (const auto& attribute : attributes) {
+                new_group.attributes[attribute.first] = attribute.second;
+            }
+            for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+				new_group.attributes[attribute->name()] = attribute->value();
+			}
+			new_group.traversal_group(node, max_width, max_height, shapes);
+		}
     }
-    return shapes;
 }
-
 
 //================================== Drawing area ==========================================================================================================
 
@@ -537,7 +617,7 @@ void text::get_max(float& max_width, float& max_height) {
         max_height = start.y - font_size;
 }
 
-void transform_image(Graphics& graphics, float angle, int width, int height, int scroll_x, int scroll_y, float scale) {
+void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale) {
 
     // Lưu ý: Sử dụng REAL thay vì static_cast<REAL> để tránh lỗi chuyển đổi không mong muốn.
 

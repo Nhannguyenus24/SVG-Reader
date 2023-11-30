@@ -14,6 +14,7 @@
 #include <codecvt> // Để sử dụng codecvt_utf8
 #include "Object.h"
 #include <algorithm>
+#include <regex>
 #include <unordered_map>
 #include "framework.h"
 using namespace std;
@@ -125,8 +126,8 @@ public:
 
 class group {
 public:
-	unordered_map<string, string> attribute;
-	
+	unordered_map<string, string> attributes;
+	void traversal_group(rapidxml::xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes);
 };
 
 vector<shape*> read_file(string file_name, float& max_width, float& max_height);
