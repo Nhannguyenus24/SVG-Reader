@@ -108,10 +108,12 @@ public:
 	string text_;
 	string font_family;
 	bool italic;
+	float dx, dy;
 	text() {
 		text_ = "";
 		font_family = "Times New Roman";
 		italic = false;
+		dx = dy = 0;
 	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
@@ -121,7 +123,16 @@ class path : public shape {
 public:
 	string data;
 	string linecap, linejoin;
+	path() {
+		linecap = "butt";
+		linejoin = "miter";
+	}
+	void read_single_point(string data, int& index, point& p);
+	float read_single_point(string data, int& index);
 	void draw(Graphics& graphics) override;
+	void get_max(float& max_width, float& max_height) override {
+		return;
+	}
 };
 
 class group {

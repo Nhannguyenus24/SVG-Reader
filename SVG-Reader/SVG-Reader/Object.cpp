@@ -44,28 +44,72 @@ color readRGB(string value) {
     return colour;
 }
 
-void readTransform(std::string value, point& translate, float& rotate, float& scale_x, float& scale_y) {
-    std::istringstream ss(value);
+bool check(char a) {
+    if (a <= 'Z' && a >= 'A')
+        return true;
+    if (a <= 'z' && a >= 'a')
+        return true;
+    if (a <= '9' && a >= '0')
+        return true;
+    if (a == '(' || a == ')')
+        return true;
+    return false;
+}
+void remove_space(string& s) {
+    for (int i = 1; i < s.length() - 1; i++) {
+        if (!check(s[i])) {
+            if (s[i - 1] <= '9' && s[i - 1] >= '0' && s[i + 1] <= '9' && s[i + 1] >= '0' && s[i] != '.') {
+                s[i] = ',';
+                continue;
+            }
+            else if (s[i] != '.') {
+                s.erase(i, 1);
+                i--;
+            }
+        }
+    }
+}
 
-    std::string token;
-    while (ss >> token) {
-        if (token == "translate") {
-            ss >> translate.x;
-            ss.ignore(); // Ignore the comma
-            ss >> translate.y;
-        }
-        else if (token == "rotate") {
-            ss >> rotate;
-        }
-        else if (token == "scale") {
-            ss >> scale_x;
-            if (ss.peek() == ',') {
-                ss.ignore(); // Ignore the comma
-                ss >> scale_y;
-            }
+void readTransform(string value, point& translate, float& rotate, float& scale_x, float& scale_y) {
+    string temp;
+    string vessel1 = "", vessel2 = "";
+    bool change = true;
+    remove_space(value);
+    //value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
+    if (value.find("translate") != string::npos)
+    {
+        stringstream ss(value.substr(value.find("translate") + 10));
+        getline(ss, temp, ',');
+        translate.x = stof(temp);
+        getline(ss, temp, ')');
+        translate.y = stof(temp);
+    }
+    if (value.find("rotate") != string::npos)
+    {
+        stringstream ss(value.substr(value.find("rotate") + 7));
+        getline(ss, temp, ')');
+        rotate = stof(temp);
+    }
+    if (value.find("scale") != string::npos) {
+        stringstream ss(value.substr(value.find("scale") + 6));
+        getline(ss, temp, ')');
+        for (int i = 0; i < temp.length(); i++) {
+            if (temp[i] == ',') {
+                change = false;
+                continue;
+			}
+            if (change) {
+				vessel1 += temp[i];
+			}
             else {
-                scale_y = scale_x;
-            }
+				vessel2 += temp[i];
+			}
+		}
+        if (vessel2.length() == 0)
+            scale_x = scale_y = stof(vessel1);
+        else {
+            scale_x = stof(vessel1);
+			scale_y = stof(vessel2);
         }
     }
 }
@@ -189,6 +233,12 @@ void readText(string name, string value, text* text) {
     else if (name == "transform") {
         readTransform(value, text->translate, text->rotate, text->scale_x, text->scale_y);
     }
+    else if (name == "dx") {
+        text->dx = stof(value);
+	}
+    else if (name == "dy") {
+		text->dy = stof(value);
+	}
 }
 
 void readLine(string name, string value, line* line) {
@@ -341,7 +391,40 @@ void readCircle(string name, string value, circle* cir) {
         readTransform(value, cir->translate, cir->rotate, cir->scale_x, cir->scale_y);
     }
 }
-
+void readPath(string name, string value, path* path) {
+    if (name == "d") {
+        path->data = value;
+    }
+    else if (name == "stroke") {
+        if (value == "none" || value == "transparent") {
+			path->stroke_opacity = 0;
+		}
+		else
+			path->stroke_color = readRGB(value);
+    }
+    else if (name == "stroke-width") {
+        path->stroke_width = stoi(value);
+    }
+    else if (name == "stroke-linejoin") {
+        path->linejoin = value;
+    }
+    else if (name == "stroke-linecap") {
+        path->linecap = value;
+    }
+    else if (name == "fill-opacity") {
+        path->fill_opacity = stof(value);
+    }
+    else if (name == "stroke-opacity") {
+        path->stroke_opacity = stof(value);
+    }
+    else if (name == "fill") {
+        if (value == "none" || value == "transparent") {
+            path->fill_opacity = 0;
+        }
+        else
+            path->fill_color = readRGB(value);
+    }
+}
 vector<shape*> read_file(string file_name, float& max_width, float& max_height) {
     vector<shape*> shapes;
     ifstream file(file_name);
@@ -449,6 +532,17 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
             tex->get_max(max_width, max_height);
             shapes.push_back(tex);
         }
+        else if (name == "path") {
+            path* p = new path();
+            for (const auto& attribute : attributes) {
+				readPath(attribute.first, attribute.second, p);
+			}
+            for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+				readPath(attribute->name(), attribute->value(), p);
+			}
+			p->get_max(max_width, max_height);
+			shapes.push_back(p);
+        }
         else if (name == "g") {
 			group new_group;
             for (const auto& attribute : attributes) {
@@ -467,6 +561,7 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
 VOID line::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     graphics.DrawLine(&pen, start.x, start.y, end.x, end.y);
@@ -489,6 +584,7 @@ VOID rectangle::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
@@ -508,6 +604,7 @@ VOID circle::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     graphics.FillEllipse(&fillBrush, start.x - r, start.y - r, 2 * r, 2 * r);
@@ -527,6 +624,7 @@ VOID ellipse::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
@@ -546,6 +644,7 @@ VOID polygon::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     Point* point = new Point[p.size()];
@@ -571,6 +670,7 @@ void polygon::get_max(float& max_width, float& max_height) {
 VOID polyline::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     Point* point = new Point[p.size()];
@@ -601,8 +701,9 @@ VOID text::draw(Graphics& graphics) {
     wstring wFontFamily = converter.from_bytes(font_family);
     FontFamily  fontFamily(wFontFamily.c_str());
     Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
-    PointF pointF(static_cast<REAL>(start.x), static_cast<REAL>(start.y - font_size));
+    PointF pointF(static_cast<REAL>(start.x + dx), static_cast<REAL>(start.y - font_size + dy));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
     graphics.ScaleTransform(scale_x, scale_y);
     const wstring wstr = wstring(text_.begin(), text_.end());
@@ -615,6 +716,242 @@ void text::get_max(float& max_width, float& max_height) {
         max_width = start.x + text_.length();
     if (max_height > start.y - font_size)
         max_height = start.y - font_size;
+}
+
+void path::read_single_point(string data, int& index, point& p) {
+    string n1 = "0", n2 = "0";
+    bool s1 = false, s2 = false, accept = false;
+    bool negative1 = false, negative2 = false;
+    while (true) {
+        if (data[index] > '9' || data[index] < '0') {
+            if (s1 == true) {
+                s1 = false;
+                accept = true;
+            }
+            if (s2 == true) {
+                p.x = stof(n1);
+                p.y = stof(n2);
+                if (negative1)
+					p.x *= -1;
+                if (negative2)
+                    p.y *= -1;
+                return;
+            }
+        }
+        else if (data[index] <= '9' && data[index] >= '0' && s1 == false && s2 == false && accept == false) {
+            n1 += data[index];
+            if (data[index - 1] == '-') {
+				negative1 = true;
+			}
+            s1 = true;
+            index++;
+            continue;
+        }
+        else if (data[index] <= '9' && data[index] >= '0' && s1 == false && accept == true) {
+            n2 += data[index];
+            s2 = true;
+            if (data[index - 1] == '-') {
+                negative2 = true;
+            }
+            index++;
+            continue;
+        }
+        if (data[index] <= '9' && data[index] >= '0') {
+            if (s1) {
+                n1 += data[index];
+            }
+            if (s2) {
+                n2 += data[index];
+            }
+        }
+        index++;
+    }
+}
+
+float path::read_single_point(string data, int& index){
+    string n = "0";
+	bool s = false;
+    bool negative = false;
+    while (true) {
+        if (data[index] == '-' && data[index + 1] <= '9' && data[index + 1] >= '0') {
+			negative = true;
+		}
+        if (data[index] > '9' || data[index] < '0') {
+            if (s == true) {
+                float result = stof(n);
+                if (negative)
+                    result *= -1;
+				return  result;
+			}
+		}
+        else if (data[index] <= '9' && data[index] >= '0' && s == false) {
+			n += data[index];
+			s = true;
+			index++;
+			continue;
+		}
+        if (data[index] <= '9' && data[index] >= '0') {
+			n += data[index];
+		}
+		index++;
+	}
+}
+
+void path::draw(Graphics& graphics) {
+    GraphicsState save = graphics.Save();
+    graphics.TranslateTransform(translate.x, translate.y);
+    graphics.RotateTransform(rotate);
+    graphics.ScaleTransform(scale_x, scale_y);
+    GraphicsPath path;
+    point current_point;
+    point start_point;
+    point d1, d2, d;
+    bool first_point = true;
+    int index = 0;
+    float single_type;
+    char last_command;
+    while (index < data.length()) {    
+        if (data[index] == 'z' || data[index] == 'Z'){
+			index++;
+            path.AddLine(current_point.x, current_point.y, start_point.x, start_point.y);
+            first_point = true;
+            last_command = 'z';
+        }
+        else if (data[index] == 'm') {
+            read_single_point(data, index, d);
+            if (first_point) {
+				first_point = false;
+				start_point.x = d.x, start_point.y = d.y;
+				current_point.x = d.x, current_point.y = d.y;
+				path.StartFigure();
+                last_command = 'm';
+			}
+            else {
+				current_point.x += d.x;
+				current_point.y += d.y;
+                last_command = 'm';
+			}
+        }
+        else if (data[index] == 'M') {
+            read_single_point(data, index, d);
+            if (first_point) {
+                first_point = false;
+                start_point.x = d.x, start_point.y = d.y;
+                current_point.x = d.x, current_point.y = d.y;
+                path.StartFigure();
+                last_command = 'M';
+            }
+            else {
+                current_point.x = d.x;
+                current_point.y = d.y;
+                last_command = 'M';
+            }
+        }
+        else if (data[index] == 'l') {
+			read_single_point(data, index, d);
+            path.AddLine(current_point.x, current_point.y, current_point.x + d.x, current_point.y + d.y);
+            current_point.x += d.x;
+            current_point.y += d.y;
+            last_command = 'l';
+		}
+        else if (data[index] == 'L') {
+			read_single_point(data, index, d);
+            path.AddLine(current_point.x, current_point.y, d.x, d.y);
+			current_point.x = d.x;
+			current_point.y = d.y;
+			last_command = 'L';
+		}
+        else if (data[index] == 'h') {
+			single_type = read_single_point(data, index);
+            path.AddLine(current_point.x, current_point.y, current_point.x + single_type, current_point.y);
+            current_point.x += single_type;
+            last_command = 'h';
+		}
+        else if (data[index] == 'H') {
+			single_type = read_single_point(data, index);
+			path.AddLine(current_point.x, current_point.y, single_type, current_point.y);
+			current_point.x = single_type;
+            last_command = 'H';
+		}
+        else if (data[index] == 'v') {
+            single_type = read_single_point(data, index);
+            path.AddLine(current_point.x, current_point.y, current_point.x, current_point.y + single_type);
+			current_point.y += single_type;
+            last_command = 'v';
+		}
+        else if (data[index] == 'V') {
+			single_type = read_single_point(data, index);
+            path.AddLine(current_point.x, current_point.y, current_point.x, single_type);
+			current_point.y = single_type;
+            last_command = 'V';
+		}
+        else if (data[index] == 'c') {
+			read_single_point(data, ++index, d1);
+			read_single_point(data, ++index, d2);
+			read_single_point(data, ++index, d);
+			
+			path.AddBezier( current_point.x, current_point.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x + d2.x, current_point.y + d2.y, current_point.x + d.x, current_point.y + d.y);
+			current_point.x += d.x;
+			current_point.y += d.y;
+            last_command = 'c';
+		}
+        else if (data[index] == 'C') {
+			read_single_point(data, ++index, d1);
+			read_single_point(data, ++index, d2);
+			read_single_point(data, ++index, d);
+			path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, d2.x, d2.y, d.x, d.y);
+			current_point.x = d.x;
+			current_point.y = d.y;
+            last_command = 'C';
+		}
+        else if (data[index] <= '9' && data[index] >= '0') {
+            switch (last_command) {
+            case 'm':
+                read_single_point(data, index, d);
+                path.AddLine(current_point.x, current_point.y, current_point.x + d.x, current_point.y + d.y);
+                current_point.x += d.x;
+                current_point.y += d.y;
+                break;
+
+            case 'M':
+                read_single_point(data, index, d);
+                path.AddLine(current_point.x, current_point.y, d.x, d.y);
+                current_point.x = d.x;
+                current_point.y = d.y;
+                break;
+            }
+        }
+        else {
+            index++;
+        }
+    }
+    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
+   /* if (linecap == "round") {
+        pen.SetStartCap(LineCapRound);
+        pen.SetEndCap(LineCapRound);
+    }
+    else if (linecap == "square") {
+        pen.SetStartCap(LineCapSquare);
+        pen.SetEndCap(LineCapSquare);
+    }
+    else {
+        pen.SetStartCap(LineCapFlat);
+        pen.SetEndCap(LineCapFlat);
+   }
+    if (linejoin == "round") {
+        pen.SetLineJoin(LineJoinRound);
+    }
+    else if (linejoin == "bevel") {
+        pen.SetLineJoin(LineJoinBevel);
+    }
+    else {
+        pen.SetLineJoin(LineJoinMiter);
+   }*/
+    graphics.FillPath(&fillBrush, &path);
+    if (stroke_width != 0)
+        graphics.DrawPath(&pen, &path);
+    graphics.Restore(save);
 }
 
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale) {

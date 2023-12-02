@@ -13,7 +13,7 @@ float Rotate = 0;
 float scroll_x = 0;
 float scroll_y = 0;
 float max_width = 0, max_height = 0;
-string path = "default.svg";
+string path = "C:\\Users\\LENOVO\\Downloads\\svg-02.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -131,6 +131,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     GdiplusStartup(&token, &gdiplusStartupInput, nullptr);
     bool is_dragging = false;
     POINT last_mouse_position;
+    vector<shape*> shapes;
     switch (message)
     {
     case WM_COMMAND:
@@ -269,10 +270,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 shapes[i]->draw(graphics);
             }
             EndPaint(hWnd, &ps);
+            
         }
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
+        for (int i = 0; i < shapes.size(); i++) {
+            delete shapes[i];
+        }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
