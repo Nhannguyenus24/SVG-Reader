@@ -52,7 +52,7 @@ public:
 		stroke_width = 0;
 		stroke_opacity = fill_opacity = 1;
 		rotate = 0;
-		scale_x = scale_y = 0;
+		scale_x = scale_y = 1;
 	}
 	virtual void draw(Graphics& graphics) = 0;
 	virtual void get_max(float& max_width, float& max_height) = 0;
@@ -76,6 +76,10 @@ public:
 class ellipse : public shape {
 public:
 	float rx, ry; // bán kính chiều ngang, dọc
+	ellipse() {
+		rx = ry = 0;
+		stroke_width = 1;
+	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
 };
@@ -84,6 +88,10 @@ class circle : public shape {
 public:
 	point center;
 	float r; // bán kính 
+	circle() {
+		r = 0;
+		stroke_width = 1;
+	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
 };
@@ -98,6 +106,9 @@ public:
 class polyline : public shape{
 public:
 	vector<point> p;
+	polyline() {
+		stroke_width = 1;
+	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
 };
@@ -114,6 +125,8 @@ public:
 		font_family = "Times New Roman";
 		italic = false;
 		dx = dy = 0;
+		stroke_color.red = stroke_color.green = stroke_color.blue = 255;
+
 	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;

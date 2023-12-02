@@ -16,7 +16,25 @@ color readRGB(string value) {
         getline(ss, temp, ')');
         colour.blue = stof(temp);
     }
+    else if (value[0] == '#') {
+        unsigned int hexValue;
+        if (value.length() == 4) {
+			char a1 = value[1], a2 = value[2], a3 = value[3];
+            value = "#" + string(1, a1) + string(1, a1) + string(1, a2) + string(1, a2) + string(1, a3) + string(1, a3);
+		}   
+        istringstream(value.substr(1)) >> hex >> hexValue;
+
+        colour.red = (hexValue >> 16) & 0xFF;
+        colour.green = (hexValue >> 8) & 0xFF;
+        colour.blue = hexValue & 0xFF;
+        int alpha = (hexValue >> 24) & 0xFF;
+    }
     else {
+        for (int i = 0; i < value.length(); i++) {
+            if (value[i] >= 'A' && value[i] <= 'Z') {
+				value[i] += 32; 
+			}
+		}
         ifstream file("rgb.txt");
         if (file.is_open()) {
             string line;
@@ -58,11 +76,11 @@ bool check(char a) {
 void remove_space(string& s) {
     for (int i = 1; i < s.length() - 1; i++) {
         if (!check(s[i])) {
-            if (s[i - 1] <= '9' && s[i - 1] >= '0' && s[i + 1] <= '9' && s[i + 1] >= '0' && s[i] != '.') {
+            if (s[i - 1] <= '9' && s[i - 1] >= '0' && ((s[i + 1] <= '9' && s[i + 1] >= '0') || s[i + 1] == '-') && s[i] != '.') {
                 s[i] = ',';
                 continue;
             }
-            else if (s[i] != '.') {
+            else if (s[i] != '.' && s[i] != '-') {
                 s.erase(i, 1);
                 i--;
             }
@@ -120,28 +138,27 @@ vector<point> readPoints(string value) {
     // Xóa khoảng trắng ở đầu và cuối chuỗi
     value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
-    // Kiểm tra và loại bỏ dấu cách đầu tiên nếu có
-    if (!value.empty() && value[0] == ' ') {
-        value = value.substr(1);
-    }
-
-    // Kiểm tra và loại bỏ dấu cách cuối cùng nếu có
-    if (!value.empty() && value.back() == ' ') {
-        value = value.substr(0, value.size() - 1);
-    }
-
     stringstream ss(value);
     string temp = "";
     string pointStr;
     while (getline(ss, pointStr, ' ')) {
         point p;
-        stringstream pointStream(pointStr);
-        getline(pointStream, pointStr, ',');
-        p.x = stof(pointStr);
-        getline(pointStream, pointStr, ',');
-        p.y = stof(pointStr);
-        points.push_back(p);
+        if (pointStr.find(',') == string::npos) {
+            p.x = stof(pointStr);
+            getline(ss, pointStr, ' ');
+            p.y = stof(pointStr);
+            points.push_back(p);
+        }
+        else {
+            stringstream pointStream(pointStr);
+            getline(pointStream, pointStr, ',');
+            p.x = stof(pointStr);
+            getline(pointStream, pointStr, ',');
+            p.y = stof(pointStr);
+            points.push_back(p);
+        }
     }
+
     return points;
 }
 
@@ -227,6 +244,19 @@ void readText(string name, string value, text* text) {
 		else
             text->fill_color = readRGB(value);
     }
+    else if (name == "fill-opacity") {
+		text->fill_opacity = stof(value);
+	}
+    else if (name == "stroke") {
+        if (value == "none" || value == "transparent") {
+            text->stroke_opacity = 0;
+        }
+        else
+			text->stroke_color = readRGB(value);
+    }
+    else if (name == "stroke-opacity") {
+		text->stroke_opacity = stof(value);
+	}
     else if (name == "font-family") {
         text->font_family = value;
     }
@@ -300,9 +330,13 @@ void readRectangle(string name, string value, rectangle* rect) {
         rect->start.y = stof(value);
     }
     else if (name == "width") {
+        if (value[value.length() - 1] == 't')
+			value = value.substr(0, value.length() - 2);
         rect->width = stof(value);
     }
     else if (name == "height") {
+        if (value[value.length() - 1] == 't')
+            value = value.substr(0, value.length() - 2);
         rect->height = stof(value);
     }
     else if (name == "stroke-width") {
@@ -424,6 +458,9 @@ void readPath(string name, string value, path* path) {
         else
             path->fill_color = readRGB(value);
     }
+    else if (name == "transform") {
+		readTransform(value, path->translate, path->rotate, path->scale_x, path->scale_y);
+	}
 }
 vector<shape*> read_file(string file_name, float& max_width, float& max_height) {
     vector<shape*> shapes;
@@ -544,12 +581,23 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
 			shapes.push_back(p);
         }
         else if (name == "g") {
-			group new_group;
+            group new_group;
             for (const auto& attribute : attributes) {
-                new_group.attributes[attribute.first] = attribute.second;
+                    new_group.attributes[attribute.first] = attribute.second;
             }
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-				new_group.attributes[attribute->name()] = attribute->value();
+                auto it = new_group.attributes.find(attribute->name());
+                if (it != new_group.attributes.end() && attribute->name() == "transform") {
+                    point translate1;
+                    float rotate1, scale_x1, scale_y1;
+                    readTransform(attribute->value(), translate1, rotate1, scale_x1, scale_y1);
+                    point translate2;
+                    float rotate2, scale_x2, scale_y2;
+                    readTransform(it->second, translate2, rotate2, scale_x2, scale_y2);
+                    new_group.attributes[attribute->name()] = "translate(" + to_string(translate1.x + translate2.x) + "," + to_string(translate1.y + translate2.y) + ") rotate(" + to_string(rotate1 + rotate2) + ") scale(" + to_string(scale_x1 * scale_x2) + "," + to_string(scale_y1 * scale_y2) + ") ";
+				}
+				else
+				    new_group.attributes[attribute->name()] = attribute->value();
 			}
 			new_group.traversal_group(node, max_width, max_height, shapes);
 		}
@@ -695,19 +743,54 @@ void polyline::get_max(float& max_width, float& max_height) {
     }
 }
 
+//VOID text::draw(Graphics& graphics) {
+//    GraphicsState save = graphics.Save();
+//    wstring_convert<codecvt_utf8<wchar_t>> converter;
+//    wstring wFontFamily = converter.from_bytes(font_family);
+//    FontFamily  fontFamily(wFontFamily.c_str());
+//    Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
+//    PointF pointF(static_cast<REAL>(start.x + dx), static_cast<REAL>(start.y - font_size + dy));
+//    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+//    graphics.TranslateTransform(translate.x, translate.y);
+//    graphics.RotateTransform(rotate);
+//    graphics.ScaleTransform(scale_x, scale_y);
+//    const wstring wstr = wstring(text_.begin(), text_.end());
+//    graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
+//    graphics.Restore(save);
+//}
 VOID text::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     wstring_convert<codecvt_utf8<wchar_t>> converter;
     wstring wFontFamily = converter.from_bytes(font_family);
-    FontFamily  fontFamily(wFontFamily.c_str());
+    FontFamily fontFamily(wFontFamily.c_str());
     Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
-    PointF pointF(static_cast<REAL>(start.x + dx), static_cast<REAL>(start.y - font_size + dy));
-    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    PointF pointF(static_cast<REAL>(start.x + dx), static_cast<REAL>(start.y + dy));
+    StringFormat stringFormat; // Tạo một biến StringFormat
+    stringFormat.SetAlignment(StringAlignmentNear); // Căn giữa trái
+    stringFormat.SetLineAlignment(StringAlignmentCenter); // Căn dòng giữa
+
+    // Create a GraphicsPath
+    GraphicsPath path;
+
+    // Add the string to the path
     const wstring wstr = wstring(text_.begin(), text_.end());
-    graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
+    path.AddString(wstr.c_str(), -1, &fontFamily, 0, static_cast<REAL>(font_size), pointF, &stringFormat);
+
+    // Transformations
+    Matrix transformMatrix;
+    transformMatrix.Translate(translate.x, translate.y);
+    transformMatrix.Rotate(rotate);
+    transformMatrix.Scale(scale_x, scale_y);
+    path.Transform(&transformMatrix);
+    if (stroke_width == 0)
+        stroke_width = 2;
+    // Create a solid brush for filling
+    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
+    // Fill the path with the solid brush
+    graphics.FillPath(&fillBrush, &path);
+    if (stroke_width != 0)
+        graphics.DrawPath(&pen, &path);
     graphics.Restore(save);
 }
 
@@ -723,7 +806,7 @@ void path::read_single_point(string data, int& index, point& p) {
     bool s1 = false, s2 = false, accept = false;
     bool negative1 = false, negative2 = false;
     while (true) {
-        if (data[index] > '9' || data[index] < '0') {
+        if ((data[index] > '9' || data[index] < '0') && data[index] != '.') {
             if (s1 == true) {
                 s1 = false;
                 accept = true;
@@ -756,7 +839,7 @@ void path::read_single_point(string data, int& index, point& p) {
             index++;
             continue;
         }
-        if (data[index] <= '9' && data[index] >= '0') {
+        if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
             if (s1) {
                 n1 += data[index];
             }
@@ -776,7 +859,7 @@ float path::read_single_point(string data, int& index){
         if (data[index] == '-' && data[index + 1] <= '9' && data[index + 1] >= '0') {
 			negative = true;
 		}
-        if (data[index] > '9' || data[index] < '0') {
+        if (data[index] > '9' || data[index] < '0' && data[index] != '.') {
             if (s == true) {
                 float result = stof(n);
                 if (negative)
@@ -784,13 +867,13 @@ float path::read_single_point(string data, int& index){
 				return  result;
 			}
 		}
-        else if (data[index] <= '9' && data[index] >= '0' && s == false) {
+        else if (data[index] <= '9' && data[index] >= '0' && s == false ) {
 			n += data[index];
 			s = true;
 			index++;
 			continue;
 		}
-        if (data[index] <= '9' && data[index] >= '0') {
+        if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
 			n += data[index];
 		}
 		index++;
@@ -799,9 +882,9 @@ float path::read_single_point(string data, int& index){
 
 void path::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
-    graphics.TranslateTransform(translate.x, translate.y);
+   /* graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    graphics.ScaleTransform(scale_x, scale_y);*/
     GraphicsPath path;
     point current_point;
     point start_point;
@@ -809,7 +892,7 @@ void path::draw(Graphics& graphics) {
     bool first_point = true;
     int index = 0;
     float single_type;
-    char last_command;
+    char last_command = ' ';
     while (index < data.length()) {    
         if (data[index] == 'z' || data[index] == 'Z'){
 			index++;
@@ -848,6 +931,7 @@ void path::draw(Graphics& graphics) {
             }
         }
         else if (data[index] == 'l') {
+            command_l:
 			read_single_point(data, index, d);
             path.AddLine(current_point.x, current_point.y, current_point.x + d.x, current_point.y + d.y);
             current_point.x += d.x;
@@ -855,6 +939,7 @@ void path::draw(Graphics& graphics) {
             last_command = 'l';
 		}
         else if (data[index] == 'L') {
+            command_L:
 			read_single_point(data, index, d);
             path.AddLine(current_point.x, current_point.y, d.x, d.y);
 			current_point.x = d.x;
@@ -862,30 +947,35 @@ void path::draw(Graphics& graphics) {
 			last_command = 'L';
 		}
         else if (data[index] == 'h') {
+            command_h:
 			single_type = read_single_point(data, index);
             path.AddLine(current_point.x, current_point.y, current_point.x + single_type, current_point.y);
             current_point.x += single_type;
             last_command = 'h';
 		}
         else if (data[index] == 'H') {
+            command_H:
 			single_type = read_single_point(data, index);
 			path.AddLine(current_point.x, current_point.y, single_type, current_point.y);
 			current_point.x = single_type;
             last_command = 'H';
 		}
         else if (data[index] == 'v') {
+            command_v:
             single_type = read_single_point(data, index);
             path.AddLine(current_point.x, current_point.y, current_point.x, current_point.y + single_type);
 			current_point.y += single_type;
             last_command = 'v';
 		}
         else if (data[index] == 'V') {
+            command_V:
 			single_type = read_single_point(data, index);
             path.AddLine(current_point.x, current_point.y, current_point.x, single_type);
 			current_point.y = single_type;
             last_command = 'V';
 		}
         else if (data[index] == 'c') {
+            command_c:
 			read_single_point(data, ++index, d1);
 			read_single_point(data, ++index, d2);
 			read_single_point(data, ++index, d);
@@ -896,6 +986,7 @@ void path::draw(Graphics& graphics) {
             last_command = 'c';
 		}
         else if (data[index] == 'C') {
+            command_C:
 			read_single_point(data, ++index, d1);
 			read_single_point(data, ++index, d2);
 			read_single_point(data, ++index, d);
@@ -919,7 +1010,30 @@ void path::draw(Graphics& graphics) {
                 current_point.x = d.x;
                 current_point.y = d.y;
                 break;
-            }
+            case 'c':
+                goto command_c;
+                break;
+            case 'C':
+                goto command_C;
+                break;
+            case 'L':
+                goto command_L;
+            case 'l':
+				goto command_l;
+				break;
+            case 'h':
+                goto command_h;
+				break;
+            case 'H':
+                goto command_H;
+                break;
+            case 'v':
+                goto command_v;
+				break;
+            case 'V':
+                goto command_V;
+				break;
+			}
         }
         else {
             index++;
@@ -948,6 +1062,12 @@ void path::draw(Graphics& graphics) {
     else {
         pen.SetLineJoin(LineJoinMiter);
    }*/
+
+    Matrix transformMatrix;
+    transformMatrix.Translate(translate.x, translate.y);
+    transformMatrix.Rotate(rotate);
+    transformMatrix.Scale(scale_x, scale_y);
+    path.Transform(&transformMatrix);
     graphics.FillPath(&fillBrush, &path);
     if (stroke_width != 0)
         graphics.DrawPath(&pen, &path);
