@@ -79,6 +79,7 @@ bool check(char a) {
         return true;
     return false;
 }
+
 void remove_space(string& s) {
     for (int i = 1; i < s.length() - 1; i++) {
         if (!check(s[i])) {
@@ -871,7 +872,9 @@ VOID text::draw(Graphics& graphics) {
             index--;
     }
     wstring_convert<codecvt_utf8<wchar_t>> converter;
+
     wstring wFontFamily = converter.from_bytes(font_family);
+
     FontFamily fontFamily(wFontFamily.c_str());
     Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
     
@@ -994,7 +997,8 @@ float path::read_single_point(string data, int& index){
 
 void path::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
-    
+    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
+    Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     int index = 0;
     for (int i = 0; i < trans.types.size(); i++) {
         if (trans.types[i] == "translate")
@@ -1019,25 +1023,30 @@ void path::draw(Graphics& graphics) {
         if (data[index] == 'z' || data[index] == 'Z'){
 			index++;
             path.CloseFigure();
-            first_point = true;
+            start_point.x = current_point.x;
+            start_point.y = current_point.y;
             last_command = 'z';
         }
         else if (data[index] == 'm') {
+            command_m:
             read_single_point(data, index, d);
             if (first_point) {
 				first_point = false;
 				start_point.x = d.x, start_point.y = d.y;
 				current_point.x = d.x, current_point.y = d.y;
 				path.StartFigure();
+
                 last_command = 'm';
 			}
             else {
 				current_point.x += d.x;
 				current_point.y += d.y;
+                
                 last_command = 'm';
 			}
         }
         else if (data[index] == 'M') {
+            command_M:
             read_single_point(data, index, d);
             if (first_point) {
                 first_point = false;
@@ -1101,7 +1110,6 @@ void path::draw(Graphics& graphics) {
 			read_single_point(data, ++index, d1);
 			read_single_point(data, ++index, d2);
 			read_single_point(data, ++index, d);
-			
 			path.AddBezier( current_point.x, current_point.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x + d2.x, current_point.y + d2.y, current_point.x + d.x, current_point.y + d.y);
 			current_point.x += d.x;
 			current_point.y += d.y;
@@ -1162,8 +1170,7 @@ void path::draw(Graphics& graphics) {
             index++;
         }
     }
-    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
+    
    /* if (linecap == "round") {
         pen.SetStartCap(LineCapRound);
         pen.SetEndCap(LineCapRound);
