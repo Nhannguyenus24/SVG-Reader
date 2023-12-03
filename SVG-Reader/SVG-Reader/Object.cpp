@@ -10,10 +10,16 @@ color readRGB(string value) {
         string temp = "";
         getline(ss, temp, '(');
         getline(ss, temp, ',');
+        if (stof(temp) > 255)
+            temp = "255";
         colour.red = stof(temp);
         getline(ss, temp, ',');
+        if (stof(temp) > 255)
+            temp = "255";
         colour.green = stof(temp);
         getline(ss, temp, ')');
+        if (stof(temp) > 255)
+            temp = "255";
         colour.blue = stof(temp);
     }
     else if (value[0] == '#') {
@@ -88,49 +94,62 @@ void remove_space(string& s) {
     }
 }
 
-void readTransform(string value, point& translate, float& rotate, float& scale_x, float& scale_y) {
-    string temp;
+void readTransform(string value,  multi_transform& tr) {
+    string temp = value;
     string vessel1 = "", vessel2 = "";
     bool change = true;
     remove_space(value);
     //value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
-    if (value.find("translate") != string::npos)
-    {
-        stringstream ss(value.substr(value.find("translate") + 10));
-        getline(ss, temp, ',');
-        translate.x = stof(temp) + translate.x;
-        getline(ss, temp, ')');
-        translate.y = stof(temp) + translate.y;
-    }
-    if (value.find("rotate") != string::npos)
-    {
-        stringstream ss(value.substr(value.find("rotate") + 7));
-        getline(ss, temp, ')');
-        rotate = stof(temp) + rotate;
-    }
-    if (value.find("scale") != string::npos) {
-        stringstream ss(value.substr(value.find("scale") + 6));
-        getline(ss, temp, ')');
-        for (int i = 0; i < temp.length(); i++) {
-            if (temp[i] == ',') {
-                change = false;
-                continue;
-			}
-            if (change) {
-				vessel1 += temp[i];
-			}
-            else {
-				vessel2 += temp[i];
+    for (int i = 0; i < value.length() - 1; i++) {
+        if (value[i] == 't' && value[i + 1] == 'r') {
+            tr.types.push_back("translate");
+            if (value.find("translate") != string::npos)
+            {
+                stringstream ss(value.substr(value.find("translate") + 10));
+                getline(ss, temp, ',');
+                tr.values.push_back(stof(temp));
+                getline(ss, temp, ')');
+                tr.values.push_back(stof(temp));
+                value = value.substr(value.find("translate") + 10);
+            }
+		}
+        else if (value[i] == 's' && value[i + 1] == 'c') {
+            tr.types.push_back("scale");
+            if (value.find("scale") != string::npos) {
+                stringstream ss(value.substr(value.find("scale") + 6));
+                getline(ss, temp, ')');
+                for (int i = 0; i < temp.length(); i++) {
+                    if (temp[i] == ',') {
+                        change = false;
+                        continue;
+                    }
+                    if (change) {
+                        vessel1 += temp[i];
+                    }
+                    else {
+                        vessel2 += temp[i];
+                    }
+                }
+                if (vessel2.length() == 0) {
+                    tr.values.push_back(stof(vessel1));
+                    tr.values.push_back(stof(vessel1));
+                }
+                else {
+                    tr.values.push_back(stof(vessel1));
+                    tr.values.push_back(stof(vessel2));
+                }
+                value = value.substr(value.find("scale") + 6);
+            }
+        }
+        else if (value[i] == 'r' && value[i + 1] == 'o') {
+            tr.types.push_back("rotate");
+            if (value.find("rotate") != string::npos) {
+				stringstream ss(value.substr(value.find("rotate") + 7));
+				getline(ss, temp, ')');
+				tr.values.push_back(stof(temp));
+                value = value.substr(value.find("rotate") + 7);
 			}
 		}
-        if (vessel2.length() == 0) {
-            scale_x = stof(vessel1) * scale_x;
-            scale_y = stof(vessel1) * scale_y;
-        }
-        else {
-            scale_x = stof(vessel1) * scale_x;
-			scale_y = stof(vessel2) * scale_y;
-        }
     }
 }
 
@@ -196,7 +215,8 @@ void readPolygon(string name, string value, polygon* polygon) {
         polygon->p = readPoints(value);
     }
     else if (name == "transform") {
-        readTransform(value, polygon->translate, polygon->rotate, polygon->scale_x, polygon->scale_y);
+        string s = value;
+        readTransform(value, polygon->trans);
     }
 }
 
@@ -231,7 +251,7 @@ void readPolyline(string name, string value, polyline* polyline) {
         polyline->p = readPoints(value);
     }
     else if (name == "transform") {
-        readTransform(value, polyline->translate, polyline->rotate, polyline->scale_x, polyline->scale_y);
+        readTransform(value, polyline->trans);
     }
 }
 
@@ -272,7 +292,7 @@ void readText(string name, string value, text* text) {
         text->font_family = value;
     }
     else if (name == "transform") {
-        readTransform(value, text->translate, text->rotate, text->scale_x, text->scale_y);
+        readTransform(value, text->trans);
     }
     else if (name == "dx") {
         text->dx = stof(value);
@@ -315,7 +335,7 @@ void readLine(string name, string value, line* line) {
         line->stroke_width = stof(value);
     }
     else if (name == "transform") {
-        readTransform(value, line->translate, line->rotate, line->scale_x, line->scale_y);
+        readTransform(value, line->trans);
     }
 }
 
@@ -363,7 +383,7 @@ void readRectangle(string name, string value, rectangle* rect) {
         rect->stroke_width = stof(value);
     }
     else if (name == "transform") {
-        readTransform(value, rect->translate, rect->rotate, rect->scale_x, rect->scale_y);
+        readTransform(value, rect->trans);
     }
 }
 
@@ -407,7 +427,7 @@ void readEllipse(string name, string value, ellipse* elli) {
         elli->stroke_width = stof(value);
     }
     else if (name == "transform") {
-        readTransform(value, elli->translate, elli->rotate, elli->scale_x, elli->scale_y);
+        readTransform(value, elli->trans);
     }
 }
 
@@ -448,7 +468,7 @@ void readCircle(string name, string value, circle* cir) {
         cir->stroke_width = stof(value);
     }
     else if (name == "transform") {
-        readTransform(value, cir->translate, cir->rotate, cir->scale_x, cir->scale_y);
+        readTransform(value, cir->trans);
     }
 }
 void readPath(string name, string value, path* path) {
@@ -488,7 +508,7 @@ void readPath(string name, string value, path* path) {
             path->fill_color = readRGB(value);
     }
     else if (name == "transform") {
-		readTransform(value, path->translate, path->rotate, path->scale_x, path->scale_y);
+		readTransform(value, path->trans);
 	}
 }
 vector<shape*> read_file(string file_name, float& max_width, float& max_height) {
@@ -620,18 +640,7 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
                 if (it != new_group.attributes.end()) {
 
                     if (attri->name() == transform){
-                        line* lin = new line();
-                        shapes.push_back(lin);
-                        point translate1;
-                        float rotate1 = 0, scale_x1 = 1, scale_y1 = 1;
-                        readTransform(attri->value(), translate1, rotate1, scale_x1, scale_y1);
-                        if (translate1.x == 160) {
-                            
-                        }
-                        point translate2;
-                        float rotate2 = 0, scale_x2 = 1, scale_y2 = 1;
-                        readTransform(it->second, translate2, rotate2, scale_x2, scale_y2);
-                        new_group.attributes[attri->name()] = "translate(" + to_string(translate1.x + translate2.x) + "," + to_string(translate1.y + translate2.y) + ") rotate(" + to_string(rotate1 + rotate2) + ") scale(" + to_string(scale_x1 * scale_x2) + "," + to_string(scale_y1 * scale_y2) + ") ";
+                        new_group.attributes[attri->name()] =  it->second + " " + attri->value();
                     }
                     else {
 						new_group.attributes[attri->name()] = attri->value();
@@ -650,9 +659,18 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
 VOID line::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     graphics.DrawLine(&pen, start.x, start.y, end.x, end.y);
     graphics.Restore(save);
 }
@@ -673,9 +691,18 @@ VOID rectangle::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
     if (stroke_width != 0)
         graphics.DrawRectangle(&pen, start.x, start.y, width, height);
@@ -693,9 +720,18 @@ VOID circle::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     graphics.FillEllipse(&fillBrush, start.x - r, start.y - r, 2 * r, 2 * r);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - r, start.y - r, 2 * r, 2 * r);
@@ -713,9 +749,18 @@ VOID ellipse::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
@@ -733,9 +778,18 @@ VOID polygon::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     Point* point = new Point[p.size()];
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
@@ -759,9 +813,18 @@ void polygon::get_max(float& max_width, float& max_height) {
 VOID polyline::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     Point* point = new Point[p.size()];
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
@@ -795,6 +858,18 @@ VOID text::draw(Graphics& graphics) {
 	}
     float rate = 0;
     GraphicsState save = graphics.Save();
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     wstring_convert<codecvt_utf8<wchar_t>> converter;
     wstring wFontFamily = converter.from_bytes(font_family);
     FontFamily fontFamily(wFontFamily.c_str());
@@ -821,12 +896,6 @@ VOID text::draw(Graphics& graphics) {
     const wstring wstr = wstring(text_.begin(), text_.end());
     path.AddString(wstr.c_str(), -1, &fontFamily, italic ? FontStyleItalic : FontStyleRegular, static_cast<REAL>(font_size), pointF, &stringFormat);
 
-    // Transformations
-    Matrix transformMatrix;
-    transformMatrix.Translate(translate.x, translate.y);
-    transformMatrix.Rotate(rotate);
-    transformMatrix.Scale(scale_x, scale_y);
-    path.Transform(&transformMatrix);
     // Create a solid brush for filling
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
@@ -925,15 +994,25 @@ float path::read_single_point(string data, int& index){
 
 void path::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
-    graphics.TranslateTransform(translate.x, translate.y);
-    graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);
+    
+    int index = 0;
+    for (int i = 0; i < trans.types.size(); i++) {
+        if (trans.types[i] == "translate")
+            graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
+        if (trans.types[i] == "rotate")
+            graphics.RotateTransform(trans.values[index]);
+        if (trans.types[i] == "scale")
+            graphics.ScaleTransform(trans.values[index], trans.values[index + 1]);
+        index += 2;
+        if (trans.types[i] == "rotate")
+            index--;
+    }
     GraphicsPath path;
     point current_point;
     point start_point;
     point d1, d2, d;
     bool first_point = true;
-    int index = 0;
+    index = 0;
     float single_type;
     char last_command = ' ';
     while (index < data.length()) {    

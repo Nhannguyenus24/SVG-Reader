@@ -39,20 +39,21 @@ public:
 	}
 };
 
+struct multi_transform {
+	vector<string> types;
+	vector<float> values;
+};
+
 class shape {
 public:
 	point start;
-	point translate;
-	float rotate;
-	float scale_x, scale_y;
 	color stroke_color, fill_color;
 	float stroke_width;
 	float stroke_opacity, fill_opacity;
+	multi_transform trans;
 	shape() {
 		stroke_width = 0;
 		stroke_opacity = fill_opacity = 1;
-		rotate = 0;
-		scale_x = scale_y = 1;
 	}
 	virtual void draw(Graphics& graphics) = 0;
 	virtual void get_max(float& max_width, float& max_height) = 0;
@@ -149,6 +150,7 @@ public:
 	unordered_map<string, string> attributes;
 	void traversal_group(rapidxml::xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes);
 };
+
 
 vector<shape*> read_file(string file_name, float& max_width, float& max_height);
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale);
