@@ -78,7 +78,6 @@ public:
 	float rx, ry; // bán kính chiều ngang, dọc
 	ellipse() {
 		rx = ry = 0;
-		stroke_width = 1;
 	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
@@ -90,7 +89,6 @@ public:
 	float r; // bán kính 
 	circle() {
 		r = 0;
-		stroke_width = 1;
 	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
@@ -106,9 +104,6 @@ public:
 class polyline : public shape{
 public:
 	vector<point> p;
-	polyline() {
-		stroke_width = 1;
-	}
 	void draw(Graphics& graphics) override;
 	void get_max(float& max_width, float& max_height) override;
 };
@@ -118,14 +113,15 @@ public:
 	float font_size;
 	string text_;
 	string font_family;
+	string text_anchor;
 	bool italic;
 	float dx, dy;
 	text() {
 		text_ = "";
+		text_anchor = "start";
 		font_family = "Times New Roman";
 		italic = false;
 		dx = dy = 0;
-		stroke_color.red = stroke_color.green = stroke_color.blue = 255;
 
 	}
 	void draw(Graphics& graphics) override;

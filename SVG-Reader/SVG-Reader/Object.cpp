@@ -98,15 +98,15 @@ void readTransform(string value, point& translate, float& rotate, float& scale_x
     {
         stringstream ss(value.substr(value.find("translate") + 10));
         getline(ss, temp, ',');
-        translate.x = stof(temp);
+        translate.x = stof(temp) + translate.x;
         getline(ss, temp, ')');
-        translate.y = stof(temp);
+        translate.y = stof(temp) + translate.y;
     }
     if (value.find("rotate") != string::npos)
     {
         stringstream ss(value.substr(value.find("rotate") + 7));
         getline(ss, temp, ')');
-        rotate = stof(temp);
+        rotate = stof(temp) + rotate;
     }
     if (value.find("scale") != string::npos) {
         stringstream ss(value.substr(value.find("scale") + 6));
@@ -123,11 +123,13 @@ void readTransform(string value, point& translate, float& rotate, float& scale_x
 				vessel2 += temp[i];
 			}
 		}
-        if (vessel2.length() == 0)
-            scale_x = scale_y = stof(vessel1);
+        if (vessel2.length() == 0) {
+            scale_x = stof(vessel1) * scale_x;
+            scale_y = stof(vessel1) * scale_y;
+        }
         else {
-            scale_x = stof(vessel1);
-			scale_y = stof(vessel2);
+            scale_x = stof(vessel1) * scale_x;
+			scale_y = stof(vessel2) * scale_y;
         }
     }
 }
@@ -181,8 +183,11 @@ void readPolygon(string name, string value, polygon* polygon) {
         if (value == "none" || value == "transparent") {
             polygon->stroke_opacity = 0;
         }
-		else
+        else {
             polygon->stroke_color = readRGB(value);
+            if (polygon->stroke_width == 0)
+				polygon->stroke_width = 1;
+        }
     }
     else if (name == "stroke-width") {
         polygon->stroke_width = stof(value);
@@ -213,8 +218,11 @@ void readPolyline(string name, string value, polyline* polyline) {
         if (value == "none" || value == "transparent") {
 			polyline->stroke_opacity = 0;
 		}
-		else
+        else {
             polyline->stroke_color = readRGB(value);
+            if (polyline->stroke_width == 0)
+                polyline->stroke_width = 1;
+        }
     }
     else if (name == "stroke-width") {
         polyline->stroke_width = stof(value);
@@ -251,8 +259,11 @@ void readText(string name, string value, text* text) {
         if (value == "none" || value == "transparent") {
             text->stroke_opacity = 0;
         }
-        else
-			text->stroke_color = readRGB(value);
+        else {
+            text->stroke_color = readRGB(value);
+            if (text->stroke_width == 0)
+				text->stroke_width = 1;
+        }
     }
     else if (name == "stroke-opacity") {
 		text->stroke_opacity = stof(value);
@@ -269,6 +280,9 @@ void readText(string name, string value, text* text) {
     else if (name == "dy") {
 		text->dy = stof(value);
 	}
+    else if (name == "text-anchor") {
+        text->text_anchor = value;
+    }
 }
 
 void readLine(string name, string value, line* line) {
@@ -279,8 +293,11 @@ void readLine(string name, string value, line* line) {
         if (value == "none" || value == "transparent") {
 			line->stroke_opacity = 0;
 		}
-        else 
+        else {
             line->stroke_color = readRGB(value);
+            if (line->stroke_width == 0)
+                line->stroke_width = 1;
+        }
     }
     else if (name == "x1") {
         line->start.x = stof(value);
@@ -320,8 +337,11 @@ void readRectangle(string name, string value, rectangle* rect) {
         if (value == "none" || value == "transparent") {
 			rect->stroke_opacity = 0;
 		}
-		else
+        else {
             rect->stroke_color = readRGB(value);
+            if (rect->stroke_width == 0)
+				rect->stroke_width = 1;
+        }
     }
     else if (name == "x") {
         rect->start.x = stof(value);
@@ -365,8 +385,11 @@ void readEllipse(string name, string value, ellipse* elli) {
         if (value == "none" || value == "transparent") {
             elli->stroke_opacity = 0;
         }
-        else 
+        else {
             elli->stroke_color = readRGB(value);
+            if (elli->stroke_width == 0)
+                elli->stroke_width = 1;
+        }
     }
     else if (name == "cx") {
         elli->start.x = stof(value);
@@ -406,8 +429,11 @@ void readCircle(string name, string value, circle* cir) {
         if (value == "none" || value == "transparent") {
 			cir->stroke_opacity = 0;
 		}
-		else
+        else {
             cir->stroke_color = readRGB(value);
+            if (cir->stroke_width == 0)
+				cir->stroke_width = 1;
+        }
     }
     else if (name == "cx") {
         cir->start.x = stof(value);
@@ -433,8 +459,11 @@ void readPath(string name, string value, path* path) {
         if (value == "none" || value == "transparent") {
 			path->stroke_opacity = 0;
 		}
-		else
-			path->stroke_color = readRGB(value);
+        else {
+            path->stroke_color = readRGB(value);
+            if (path->stroke_width == 0)
+                path->stroke_width = 1;
+        }
     }
     else if (name == "stroke-width") {
         path->stroke_width = stoi(value);
@@ -493,7 +522,7 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
             line* lin = new line();
             for (const auto& attribute : attributes) {
 				readLine(attribute.first, attribute.second, lin);
-			}
+			}   
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readLine(attribute->name(), attribute->value(), lin);
             }
@@ -582,22 +611,34 @@ void group::traversal_group(rapidxml::xml_node<>* root, float& max_width, float&
         }
         else if (name == "g") {
             group new_group;
-            for (const auto& attribute : attributes) {
+            for (const auto& attribute : this->attributes) {
                     new_group.attributes[attribute.first] = attribute.second;
             }
-            for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                auto it = new_group.attributes.find(attribute->name());
-                if (it != new_group.attributes.end() && attribute->name() == "transform") {
-                    point translate1;
-                    float rotate1, scale_x1, scale_y1;
-                    readTransform(attribute->value(), translate1, rotate1, scale_x1, scale_y1);
-                    point translate2;
-                    float rotate2, scale_x2, scale_y2;
-                    readTransform(it->second, translate2, rotate2, scale_x2, scale_y2);
-                    new_group.attributes[attribute->name()] = "translate(" + to_string(translate1.x + translate2.x) + "," + to_string(translate1.y + translate2.y) + ") rotate(" + to_string(rotate1 + rotate2) + ") scale(" + to_string(scale_x1 * scale_x2) + "," + to_string(scale_y1 * scale_y2) + ") ";
+            string transform = "transform";
+            for (rapidxml::xml_attribute<>* attri = node->first_attribute(); attri; attri = attri->next_attribute()) {
+                auto it = new_group.attributes.find(attri->name());
+                if (it != new_group.attributes.end()) {
+
+                    if (attri->name() == transform){
+                        line* lin = new line();
+                        shapes.push_back(lin);
+                        point translate1;
+                        float rotate1 = 0, scale_x1 = 1, scale_y1 = 1;
+                        readTransform(attri->value(), translate1, rotate1, scale_x1, scale_y1);
+                        if (translate1.x == 160) {
+                            
+                        }
+                        point translate2;
+                        float rotate2 = 0, scale_x2 = 1, scale_y2 = 1;
+                        readTransform(it->second, translate2, rotate2, scale_x2, scale_y2);
+                        new_group.attributes[attri->name()] = "translate(" + to_string(translate1.x + translate2.x) + "," + to_string(translate1.y + translate2.y) + ") rotate(" + to_string(rotate1 + rotate2) + ") scale(" + to_string(scale_x1 * scale_x2) + "," + to_string(scale_y1 * scale_y2) + ") ";
+                    }
+                    else {
+						new_group.attributes[attri->name()] = attri->value();
+					}
 				}
 				else
-				    new_group.attributes[attribute->name()] = attribute->value();
+				    new_group.attributes[attri->name()] = attri->value();
 			}
 			new_group.traversal_group(node, max_width, max_height, shapes);
 		}
@@ -699,7 +740,7 @@ VOID polygon::draw(Graphics& graphics) {
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
     }
-    graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()));
+    graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()), FillModeWinding);
     if (stroke_width != 0)
         graphics.DrawPolygon(&pen, point, static_cast<int>(p.size()));
     delete[] point;
@@ -725,9 +766,8 @@ VOID polyline::draw(Graphics& graphics) {
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
     }
-
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()));
+    graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()), FillModeWinding);
     if (stroke_width != 0)
         graphics.DrawLines(&pen, point, static_cast<int>(p.size()));
     delete[] point;
@@ -743,38 +783,43 @@ void polyline::get_max(float& max_width, float& max_height) {
     }
 }
 
-//VOID text::draw(Graphics& graphics) {
-//    GraphicsState save = graphics.Save();
-//    wstring_convert<codecvt_utf8<wchar_t>> converter;
-//    wstring wFontFamily = converter.from_bytes(font_family);
-//    FontFamily  fontFamily(wFontFamily.c_str());
-//    Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
-//    PointF pointF(static_cast<REAL>(start.x + dx), static_cast<REAL>(start.y - font_size + dy));
-//    SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-//    graphics.TranslateTransform(translate.x, translate.y);
-//    graphics.RotateTransform(rotate);
-//    graphics.ScaleTransform(scale_x, scale_y);
-//    const wstring wstr = wstring(text_.begin(), text_.end());
-//    graphics.DrawString(wstr.c_str(), -1, &font, pointF, &fillBrush);
-//    graphics.Restore(save);
-//}
 VOID text::draw(Graphics& graphics) {
+    for (int i = 0; i < text_.length(); i++) {
+        if (text_[i] == '\n') {
+            text_[i] = ' ';
+		}
+        if (text_[i] == ' ' && text_[i + 1] == ' ') {
+			text_.erase(i, 1);
+			i--;
+		}
+	}
+    float rate = 0;
     GraphicsState save = graphics.Save();
     wstring_convert<codecvt_utf8<wchar_t>> converter;
     wstring wFontFamily = converter.from_bytes(font_family);
     FontFamily fontFamily(wFontFamily.c_str());
     Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
-    PointF pointF(static_cast<REAL>(start.x + dx), static_cast<REAL>(start.y + dy));
+    
     StringFormat stringFormat; // Tạo một biến StringFormat
-    stringFormat.SetAlignment(StringAlignmentNear); // Căn giữa trái
-    stringFormat.SetLineAlignment(StringAlignmentCenter); // Căn dòng giữa
-
+    if (text_anchor == "middle") {
+        stringFormat.SetAlignment(StringAlignmentCenter); // Căn giữa
+    }
+    else if (text_anchor == "end") {
+        stringFormat.SetAlignment(StringAlignmentFar); // Căn giữa phải
+        rate = 0.15;
+    }
+	else
+    {
+        stringFormat.SetAlignment(StringAlignmentNear); // Căn giữa trái
+        rate = -0.15;
+    }
+    PointF pointF(static_cast<REAL>(start.x + dx + rate* font_size), static_cast<REAL>(start.y + dy - 0.9 * font_size));
     // Create a GraphicsPath
     GraphicsPath path;
 
     // Add the string to the path
     const wstring wstr = wstring(text_.begin(), text_.end());
-    path.AddString(wstr.c_str(), -1, &fontFamily, 0, static_cast<REAL>(font_size), pointF, &stringFormat);
+    path.AddString(wstr.c_str(), -1, &fontFamily, italic ? FontStyleItalic : FontStyleRegular, static_cast<REAL>(font_size), pointF, &stringFormat);
 
     // Transformations
     Matrix transformMatrix;
@@ -782,8 +827,6 @@ VOID text::draw(Graphics& graphics) {
     transformMatrix.Rotate(rotate);
     transformMatrix.Scale(scale_x, scale_y);
     path.Transform(&transformMatrix);
-    if (stroke_width == 0)
-        stroke_width = 2;
     // Create a solid brush for filling
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
@@ -882,9 +925,9 @@ float path::read_single_point(string data, int& index){
 
 void path::draw(Graphics& graphics) {
     GraphicsState save = graphics.Save();
-   /* graphics.TranslateTransform(translate.x, translate.y);
+    graphics.TranslateTransform(translate.x, translate.y);
     graphics.RotateTransform(rotate);
-    graphics.ScaleTransform(scale_x, scale_y);*/
+    graphics.ScaleTransform(scale_x, scale_y);
     GraphicsPath path;
     point current_point;
     point start_point;
@@ -896,7 +939,7 @@ void path::draw(Graphics& graphics) {
     while (index < data.length()) {    
         if (data[index] == 'z' || data[index] == 'Z'){
 			index++;
-            path.AddLine(current_point.x, current_point.y, start_point.x, start_point.y);
+            path.CloseFigure();
             first_point = true;
             last_command = 'z';
         }
@@ -996,6 +1039,7 @@ void path::draw(Graphics& graphics) {
             last_command = 'C';
 		}
         else if (data[index] <= '9' && data[index] >= '0') {
+            index--;
             switch (last_command) {
             case 'm':
                 read_single_point(data, index, d);
@@ -1063,11 +1107,6 @@ void path::draw(Graphics& graphics) {
         pen.SetLineJoin(LineJoinMiter);
    }*/
 
-    Matrix transformMatrix;
-    transformMatrix.Translate(translate.x, translate.y);
-    transformMatrix.Rotate(rotate);
-    transformMatrix.Scale(scale_x, scale_y);
-    path.Transform(&transformMatrix);
     graphics.FillPath(&fillBrush, &path);
     if (stroke_width != 0)
         graphics.DrawPath(&pen, &path);
