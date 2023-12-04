@@ -19,9 +19,8 @@
 #include "framework.h"
 using namespace std;
 using namespace Gdiplus;
-#pragma comment (lib,"Gdiplus.lib")
 using namespace rapidxml;
-
+#pragma comment (lib,"Gdiplus.lib")
 
 class color {
 public:
@@ -39,10 +38,12 @@ public:
 	}
 };
 
-struct multi_transform {
+class multi_transform {
+public:
 	vector<string> types;
 	vector<float> values;
 };
+
 
 class shape {
 public:
