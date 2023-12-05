@@ -139,7 +139,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Render_object.cpp" />
+    <ClCompile Include="Read_file.cpp" />
     <ClCompile Include="SVG-Reader.cpp" />
   </ItemGroup>
   <ItemGroup>

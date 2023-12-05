@@ -38,7 +38,10 @@
     <ClCompile Include="SVG-Reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
+    <ClCompile Include="Read_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render_object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
