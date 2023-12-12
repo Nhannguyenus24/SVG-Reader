@@ -134,150 +134,149 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     vector<shape*> shapes;
     switch (message)
     {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
+        case WM_COMMAND:
             {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            case IDM_ZOOM_IN:
-                scale *= 1.1;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_ZOOM_OUT:
-                scale *= 0.9;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_DEFAULT:
-                scale = 1;
-                Rotate = 0;
-                scroll_x = 0;
-                scroll_y = 0;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_ROTATE_LEFT:
-                Rotate -= 30;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_ROTATE_RIGHT:
-                Rotate += 30;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_UP:
-                scroll_y -= 20;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_DOWN:
-                scroll_y += 20;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_RIGHT:
-                scroll_x += 20;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            case IDM_LEFT:
-                scroll_x -= 20;
-                InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-                goto DrawAgain;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+                int wmId = LOWORD(wParam);
+                // Parse the menu selections:
+                switch (wmId)
+                {
+                case IDM_ABOUT:
+                    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                    break;
+                case IDM_EXIT:
+                    DestroyWindow(hWnd);
+                    break;
+                case IDM_ZOOM_IN:
+                    scale *= 1.1;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_ZOOM_OUT:
+                    scale *= 0.9;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_DEFAULT:
+                    scale = 1;
+                    Rotate = 0;
+                    scroll_x = 0;
+                    scroll_y = 0;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_ROTATE_LEFT:
+                    Rotate -= 30;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_ROTATE_RIGHT:
+                    Rotate += 30;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_UP:
+                    scroll_y -= 20;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_DOWN:
+                    scroll_y += 20;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_RIGHT:
+                    scroll_x += 20;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                case IDM_LEFT:
+                    scroll_x -= 20;
+                    InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                    goto DrawAgain;
+                default:
+                    return DefWindowProc(hWnd, message, wParam, lParam);
+                }
             }
-        }
-        break;
-    case WM_KEYDOWN:
-    {
-        switch (wParam)
-        {
-            case VK_UP:
-                // Xử lý mũi tên lên
-                scroll_y -= 20;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case VK_DOWN:
-                // Xử lý mũi tên xuống
-                scroll_y += 20;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case VK_LEFT:
-                // Xử lý mũi tên trái
-                scroll_x -= 20;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case VK_RIGHT:
-                // Xử lý mũi tên phải
-                scroll_x += 20;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case 'i': case 'I':
-                scale *= 1.1;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case 'o': case 'O':
-                scale *= 0.9;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case 'r': case 'R':
-                Rotate += 30;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-            case 'l': case 'L':
-                Rotate -= 30;
-                InvalidateRect(hWnd, NULL, TRUE);
-                goto DrawAgain;
-                break;
-                break;
-            case 'd': case 'D':
-                scale = 1;
-                Rotate = 0;
-                scroll_x = 0;
-                scroll_y = 0;
+            break;
+        case WM_KEYDOWN:
+            {
+                switch (wParam)
+                {
+                    case VK_UP:
+                        // Xử lý mũi tên lên
+                        scroll_y -= 20;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case VK_DOWN:
+                        // Xử lý mũi tên xuống
+                        scroll_y += 20;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case VK_LEFT:
+                        // Xử lý mũi tên trái
+                        scroll_x -= 20;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case VK_RIGHT:
+                        // Xử lý mũi tên phải
+                        scroll_x += 20;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case 'i': case 'I':
+                        scale *= 1.1;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case 'o': case 'O':
+                        scale *= 0.9;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case 'r': case 'R':
+                        Rotate += 30;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                    case 'l': case 'L':
+                        Rotate -= 30;
+                        InvalidateRect(hWnd, NULL, TRUE);
+                        goto DrawAgain;
+                        break;
+                        break;
+                    case 'd': case 'D':
+                        scale = 1;
+                        Rotate = 0;
+                        scroll_x = 0;
+                        scroll_y = 0;
+                        InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
+                        goto DrawAgain;
+                }
+            }
+        case WM_MOUSEWHEEL:
+            {
+                short delta = GET_WHEEL_DELTA_WPARAM(wParam);
+                if (delta > 0)
+                    scale *= 1.1;
+                else
+                    scale *= 0.9;
                 InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
                 goto DrawAgain;
-        }
-    }
-    case WM_MOUSEWHEEL:
-    {
-        short delta = GET_WHEEL_DELTA_WPARAM(wParam);
-        if (delta > 0)
-            scale *= 1.1;
-        else
-            scale *= 0.9;
-        InvalidateRect(hWnd, NULL, TRUE); // Force a repaint
-        goto DrawAgain;
-    }
-    case WM_PAINT:
-        {
-            DrawAgain:
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            Graphics graphics(hdc);
-            vector<shape*> shapes = read_file(path, max_width, max_height);
-            transform_image(graphics, Rotate, max_width + scroll_x, max_height + scroll_y , scroll_x, scroll_y, scale);
-            for (int i = 0; i < shapes.size(); i++) {
-                shapes[i]->draw(graphics);
             }
-            EndPaint(hWnd, &ps);
-            
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+        case WM_PAINT:
+            {
+                DrawAgain:
+                PAINTSTRUCT ps;
+                HDC hdc = BeginPaint(hWnd, &ps);
+                Graphics graphics(hdc);
+                vector<shape*> shapes = read_file(path, max_width, max_height);
+                transform_image(graphics, Rotate, max_width + scroll_x, max_height + scroll_y , scroll_x, scroll_y, scale);
+                for (int i = 0; i < shapes.size(); i++) {
+                    visit(shapes[i], graphics);
+                }
+                EndPaint(hWnd, &ps);
+            }
+            break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
     }
     // free memory
     for (int i = 0; i < shapes.size(); i++) {
@@ -293,16 +292,16 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
+        case WM_INITDIALOG:
             return (INT_PTR)TRUE;
-        }
-        break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+            {
+                EndDialog(hDlg, LOWORD(wParam));
+                return (INT_PTR)TRUE;
+            }
+            break;
     }
     return (INT_PTR)FALSE;
 }
