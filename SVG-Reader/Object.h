@@ -163,6 +163,24 @@ public:
 	}
 };
 
+class viewBox {
+public:
+	double width, height, min_x, min_y;
+	viewBox()
+	{
+		width = 300;
+		height = 200;
+		min_x = 0;
+		min_y = 0;
+	}
+	void setViewBoxAttribute(const string& viewBoxStr) {
+		istringstream iss(viewBoxStr);
+		iss >> min_x >> min_y >> width >> height;
+	}
+};
+
+vector<shape*> read_file(string file_name, float& max_width, float& max_height, viewBox& vb);
+
 class gradient {
 public:
 	vector<stop*> stop_list;

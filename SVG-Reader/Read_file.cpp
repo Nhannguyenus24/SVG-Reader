@@ -585,7 +585,8 @@ void read_path(string name, string value, path* path) {
 		read_transform(value, path->trans);
 	}
 }
-vector<shape*> read_file(string file_name, float& max_width, float& max_height) {
+
+vector<shape*> read_file(string file_name, float& max_width, float& max_height, viewBox& vb) {
     vector<shape*> shapes;
     ifstream file(file_name);
     // Đọc nội dung của tệp vào một vector<char>
@@ -600,12 +601,20 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height) 
 
     // Lấy nút gốc (root node) của tài liệu
     xml_node<>* root = doc.first_node("svg");
+    if (root) {
+        // Find the 'viewBox' attribute within the root 'svg' node
+        rapidxml::xml_attribute<>* viewBoxAttr = root->first_attribute("viewBox");
+
+        if (viewBoxAttr) {
+            std::string viewBoxStr = viewBoxAttr->value();
+            vb.setViewBoxAttribute(viewBoxStr);
+        }
+    }
     max_width = 0, max_height = 0;
     group g;
     g.traversal_group(root, max_width, max_height, shapes);
     return shapes;
 }
-
 void group::traversal_group(xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes) {
     for (xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
         string name = node->name();
