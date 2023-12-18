@@ -152,6 +152,56 @@ public:
 	void traversal_group(rapidxml::xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes);
 };
 
+class stop {
+public:
+	color stop_color;
+	float offset;
+	float stop_opacity;
+	stop() {
+		offset = 0;
+		stop_opacity = 1;
+	}
+};
+
+class gradient {
+public:
+	vector<stop*> stop_list;
+	//virtual void draw(Graphics& graphics);
+};
+
+class linearGradient : public gradient {
+public:
+	string id;
+	point start, end;
+	multi_transform trans;
+	string units;
+
+	//void draw(Graphics& graphics);
+};
+
+class radialGradient : public gradient {
+public:
+	string id;
+	point center;
+	float r, fx, fy;
+	multi_transform trans;
+	string units, xlink_href;
+	radialGradient() {
+		r = fx = fy = 0;
+	}
+
+	//void draw(Graphics& graphics);
+};
+
+
+
+
+
+class defs {
+public:
+	vector<linearGradient*> lg_list;
+	vector<radialGradient*> rg_list;
+};
 
 vector<shape*> read_file(string file_name, float& max_width, float& max_height);
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale);

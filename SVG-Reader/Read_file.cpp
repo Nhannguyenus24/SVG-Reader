@@ -94,6 +94,80 @@ void remove_space(string& s) {
     }
 }
 
+float clarifyFloat(string s) {
+    if (s[0] == '.') {
+        s.insert(0, "0");
+    }
+    return stof(s);
+}
+
+void readStop(string name, string value, stop* stop) {
+    if (name == "stop-color") {
+        stop->stop_color = read_RGB(value);
+    }
+    else if (name == "stop-opacity") {
+        stop->stop_opacity = clarifyFloat(value);
+    }
+    else if (name == "offset") {
+        stop->offset = clarifyFloat(value);
+    }
+}
+
+void readLinearGradient(string name, string value, linearGradient* lg) {
+    if (name == "id") {
+        lg->id = value;
+    }
+    else if (name == "x1") {
+        lg->start.x = stof(value);
+    }
+    else if (name == "x2") {
+        lg->end.x = stof(value);
+    }
+    else if (name == "y1") {
+        lg->start.y = stof(value);
+    }
+    else if (name == "y2") {
+        lg->end.y = stof(value);
+    }
+    else if (name == "gradientTransform") {
+        //read_transform(value, lg->trans);
+    }
+    else if (name == "gradientUnits") {
+        lg->units = value;
+    }
+}
+
+void readRadialGradient(string name, string value, radialGradient* rg) {
+    if (name == "id") {
+        rg->id = value;
+    }
+    else if (name == "cx") {
+        rg->center.x = stof(value);
+    }
+    else if (name == "cy") {
+        rg->center.y = stof(value);
+    }
+    else if (name == "r") {
+        rg->r = stof(value);
+    }
+    else if (name == "xlink:href") {
+        rg->xlink_href = value;
+    }
+    else if (name == "gradientTransform") {
+        //read_transform(value, rg->trans);
+    }
+    else if (name == "gradientUnits") {
+        rg->units = value;
+    }
+    else if (name == "fx") {
+        rg->fx = stof(value);
+    }
+    else if (name == "fy") {
+        rg->fy = stof(value);
+    }
+}
+
+
 void read_transform(string value,  multi_transform& tr) {
     string temp = value;
     string vessel1 = "", vessel2 = "";
@@ -648,6 +722,45 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
 			}
 			new_group.traversal_group(node, max_width, max_height, shapes);
 		}
+        else if (name == "defs") {
+            defs new_defs;
+            for (rapidxml::xml_node<>* child = node->first_node(); child; child = child->next_sibling()) {
+                string child_name = child->name();
+                if (child_name == "linearGradient") {
+                    linearGradient* lg = new linearGradient;
+                    for (rapidxml::xml_attribute<>* attribute = child->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                        readLinearGradient(attribute->name(), attribute->value(), lg);
+                    }
+                    for (rapidxml::xml_node<>* grandchild = child->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
+                        if (grandchild->name() == "stop") {
+                            stop* new_stop = new stop;
+                            for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                                readStop(attribute->name(), attribute->value(), new_stop);
+                            }
+                            lg->stop_list.push_back(new_stop);
+                        }
+                    }
+                    new_defs.lg_list.push_back(lg);
+                }
+                else if (child_name == "radialGradient") {
+                    radialGradient* rg = new radialGradient;
+                    for (rapidxml::xml_attribute<>* attribute = child->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                        readRadialGradient(attribute->name(), attribute->value(), rg);
+                    }
+                    for (rapidxml::xml_node<>* grandchild = child->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
+                        if (grandchild->name() == "stop") {
+                            stop* new_stop = new stop;
+                            for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                                readStop(attribute->name(), attribute->value(), new_stop);
+                            }
+                            rg->stop_list.push_back(new_stop);
+                        }
+                    }
+                    new_defs.rg_list.push_back(rg);
+                }
+
+            }
+        }
     }
 }
 
