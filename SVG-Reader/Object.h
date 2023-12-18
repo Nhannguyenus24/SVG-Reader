@@ -179,8 +179,6 @@ public:
 	}
 };
 
-vector<shape*> read_file(string file_name, float& max_width, float& max_height, viewBox& vb);
-
 class gradient {
 public:
 	vector<stop*> stop_list;
@@ -221,7 +219,7 @@ public:
 	vector<radialGradient*> rg_list;
 };
 
-vector<shape*> read_file(string file_name, float& max_width, float& max_height);
+vector<shape*> read_file(string file_name, float& max_width, float& max_height, viewBox& vb);
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale);
 
 #endif
