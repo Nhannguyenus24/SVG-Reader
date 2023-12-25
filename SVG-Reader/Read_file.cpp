@@ -98,6 +98,10 @@ float clarifyFloat(string s) {
     if (s[0] == '.') {
         s.insert(0, "0");
     }
+    if (s[s.length() - 1] == '%') {
+		string str = s.substr(0, s.length() - 1);
+        return stof(str) / 100;
+	}
     return stof(s);
 }
 
@@ -118,16 +122,34 @@ void readLinearGradient(string name, string value, linearGradient* lg) {
         lg->id = value;
     }
     else if (name == "x1") {
-        lg->start.x = stof(value);
+        if (value[value.length() - 1] == '%') {
+			lg->percentage = true;
+			lg->start.x = clarifyFloat(value.substr(0, value.length() - 1));
+		}
+        else {
+			lg->start.x = stof(value);
+		}
     }
     else if (name == "x2") {
-        lg->end.x = stof(value);
+        if (value[value.length() - 1] == '%') {
+            lg->end.x = clarifyFloat(value.substr(0, value.length() - 1));
+        }
+        else 
+            lg->end.x = stof(value);
     }
     else if (name == "y1") {
-        lg->start.y = stof(value);
+        if (value[value.length() - 1] == '%') {
+			lg->start.y = clarifyFloat(value.substr(0, value.length() - 1));
+		}
+		else 
+			lg->start.y = stof(value);
     }
     else if (name == "y2") {
-        lg->end.y = stof(value);
+        if (value[value.length() - 1] == '%') {
+            lg->end.y = clarifyFloat(value.substr(0, value.length() - 1));
+        }
+        else 
+			lg->end.y = stof(value);
     }
     else if (name == "gradientTransform") {
         //read_transform(value, lg->trans);
@@ -268,14 +290,19 @@ void read_polygon(string name, string value, polygon* polygon) {
         if (value == "none" || value == "transparent") {
 			polygon->fill_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			polygon->fill_id = value.substr(5, value.length() - 6);
+		}
 		else
 			polygon->fill_color = read_RGB(value);
-        polygon->fill_color = read_RGB(value);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
             polygon->stroke_opacity = 0;
         }
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			polygon->stroke_id = value.substr(5, value.length() - 6);
+		}
         else {
             polygon->stroke_color = read_RGB(value);
             if (polygon->stroke_width == 0)
@@ -305,12 +332,18 @@ void read_polyline(string name, string value, polyline* polyline) {
         if (value == "none" || value == "transparent") {
 			polyline->fill_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            polyline->fill_id = value.substr(5, value.length() - 6);
+        }
         else
             polyline->fill_color = read_RGB(value);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
 			polyline->stroke_opacity = 0;
+		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			polyline->stroke_id = value.substr(5, value.length() - 6);
 		}
         else {
             polyline->stroke_color = read_RGB(value);
@@ -343,6 +376,9 @@ void read_text(string name, string value, text* text) {
         if (value == "none" || value == "transparent") {
             text->fill_opacity = 0;
         }
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			text->fill_id = value.substr(5, value.length() - 6);
+		}
 		else
             text->fill_color = read_RGB(value);
     }
@@ -352,6 +388,9 @@ void read_text(string name, string value, text* text) {
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
             text->stroke_opacity = 0;
+        }
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            text->stroke_id = value.substr(5, value.length() - 6);
         }
         else {
             text->stroke_color = read_RGB(value);
@@ -387,6 +426,9 @@ void read_line(string name, string value, line* line) {
         if (value == "none" || value == "transparent") {
 			line->stroke_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            line->stroke_id = value.substr(5, value.length() - 6);
+        }
         else {
             line->stroke_color = read_RGB(value);
             if (line->stroke_width == 0)
@@ -424,12 +466,18 @@ void read_rectangle(string name, string value, rectangle* rect) {
         if (value == "none" || value == "transparent") {
             rect->fill_opacity = 0;
         }
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            rect->fill_id = value.substr(5, value.length() - 6);
+        }
         else 
             rect->fill_color = read_RGB(value);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
 			rect->stroke_opacity = 0;
+		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			rect->stroke_id = value.substr(5, value.length() - 6);
 		}
         else {
             rect->stroke_color = read_RGB(value);
@@ -472,6 +520,9 @@ void read_ellipse(string name, string value, ellipse* elli) {
         if (value == "none" || value == "transparent") {
 			elli->fill_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            elli->fill_id = value.substr(5, value.length() - 6);
+        }
 		else
             elli->fill_color = read_RGB(value);
     }
@@ -479,6 +530,9 @@ void read_ellipse(string name, string value, ellipse* elli) {
         if (value == "none" || value == "transparent") {
             elli->stroke_opacity = 0;
         }
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			elli->stroke_id = value.substr(5, value.length() - 6);
+		}
         else {
             elli->stroke_color = read_RGB(value);
             if (elli->stroke_width == 0)
@@ -516,6 +570,9 @@ void read_circle(string name, string value, circle* cir) {
         if (value == "none" || value == "transparent") {
 			cir->fill_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            cir->fill_id = value.substr(5, value.length() - 6);
+        }
 		else 
 			cir->fill_color = read_RGB(value);
     }
@@ -523,6 +580,9 @@ void read_circle(string name, string value, circle* cir) {
         if (value == "none" || value == "transparent") {
 			cir->stroke_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+            cir->stroke_id = value.substr(5, value.length() - 6);
+        }
         else {
             cir->stroke_color = read_RGB(value);
             if (cir->stroke_width == 0)
@@ -553,6 +613,9 @@ void read_path(string name, string value, path* path) {
         if (value == "none" || value == "transparent") {
 			path->stroke_opacity = 0;
 		}
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			path->stroke_id = value.substr(5, value.length() - 6);
+		}
         else {
             path->stroke_color = read_RGB(value);
             if (path->stroke_width == 0)
@@ -578,6 +641,9 @@ void read_path(string name, string value, path* path) {
         if (value == "none" || value == "transparent") {
             path->fill_opacity = 0;
         }
+        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
+			path->fill_id = value.substr(5, value.length() - 6);
+		}
         else
             path->fill_color = read_RGB(value);
     }
@@ -586,7 +652,7 @@ void read_path(string name, string value, path* path) {
 	}
 }
 
-vector<shape*> read_file(string file_name, float& max_width, float& max_height, viewBox& vb) {
+vector<shape*> read_file(string file_name, float& max_width, float& max_height, defs& def) {
     vector<shape*> shapes;
     ifstream file(file_name);
     // Đọc nội dung của tệp vào một vector<char>
@@ -601,21 +667,21 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height, 
 
     // Lấy nút gốc (root node) của tài liệu
     xml_node<>* root = doc.first_node("svg");
-    if (root) {
-        // Find the 'viewBox' attribute within the root 'svg' node
-        rapidxml::xml_attribute<>* viewBoxAttr = root->first_attribute("viewBox");
+    //if (root) {
+    //    // Find the 'viewBox' attribute within the root 'svg' node
+    //    rapidxml::xml_attribute<>* viewBoxAttr = root->first_attribute("viewBox");
 
-        if (viewBoxAttr) {
-            std::string viewBoxStr = viewBoxAttr->value();
-            vb.setViewBoxAttribute(viewBoxStr);
-        }
-    }
+    //    if (viewBoxAttr) {
+    //        std::string viewBoxStr = viewBoxAttr->value();
+    //        vb.setViewBoxAttribute(viewBoxStr);
+    //    }
+    //}
     max_width = 0, max_height = 0;
     group g;
-    g.traversal_group(root, max_width, max_height, shapes);
+    g.traversal_group(root, max_width, max_height, shapes, def);
     return shapes;
 }
-void group::traversal_group(xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes) {
+void group::traversal_group(xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes, defs& def) {
     for (xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
         string name = node->name();
         if (name == "line") {
@@ -729,10 +795,9 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
 				else
 				    new_group.attributes[attri->name()] = attri->value();
 			}
-			new_group.traversal_group(node, max_width, max_height, shapes);
+			new_group.traversal_group(node, max_width, max_height, shapes, def);
 		}
         else if (name == "defs") {
-            defs new_defs;
             for (rapidxml::xml_node<>* child = node->first_node(); child; child = child->next_sibling()) {
                 string child_name = child->name();
                 if (child_name == "linearGradient") {
@@ -749,7 +814,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
                             lg->stop_list.push_back(new_stop);
                         }
                     }
-                    new_defs.lg_list.push_back(lg);
+                    def.lg_list.push_back(lg);
                 }
                 else if (child_name == "radialGradient") {
                     radialGradient* rg = new radialGradient;
@@ -765,10 +830,42 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
                             rg->stop_list.push_back(new_stop);
                         }
                     }
-                    new_defs.rg_list.push_back(rg);
+                    def.rg_list.push_back(rg);
                 }
 
             }
+        }
+        else if (name == "linearGradient") {
+            linearGradient* lg = new linearGradient;
+            for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                readLinearGradient(attribute->name(), attribute->value(), lg);
+            }
+            for (rapidxml::xml_node<>* grandchild = node->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
+                if (grandchild->name() == "stop") {
+                    stop* new_stop = new stop;
+                    for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                        readStop(attribute->name(), attribute->value(), new_stop);
+                    }
+                    lg->stop_list.push_back(new_stop);
+                }
+            }
+            def.lg_list.push_back(lg);
+        }
+        else if (name == "radialGradient") {
+            radialGradient* rg = new radialGradient;
+            for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                readRadialGradient(attribute->name(), attribute->value(), rg);
+            }
+            for (rapidxml::xml_node<>* grandchild = node->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
+                if (grandchild->name() == "stop") {
+                    stop* new_stop = new stop;
+                    for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                        readStop(attribute->name(), attribute->value(), new_stop);
+                    }
+                    rg->stop_list.push_back(new_stop);
+                }
+            }
+            def.rg_list.push_back(rg);
         }
     }
 }

@@ -22,6 +22,28 @@ using namespace Gdiplus;
 using namespace rapidxml;
 #pragma comment (lib,"Gdiplus.lib")
 
+//class definition 
+class color;
+class point;
+class multi_transform;
+class shape;
+class line;
+class rectangle;
+class ellipse;
+class circle;
+class polygon;
+class polyline;
+class text;
+class path;
+class group;
+class stop;
+class viewBox;
+class gradient;
+class linearGradient;
+class radialGradient;
+class defs;
+
+
 class color {
 public:
 	int red, green, blue;
@@ -51,12 +73,14 @@ public:
 	color stroke_color, fill_color;
 	float stroke_width;
 	float stroke_opacity, fill_opacity;
+	string stroke_id, fill_id;
 	multi_transform trans;
 	shape() {
+		stroke_id = fill_id = "";
 		stroke_width = 0;
 		stroke_opacity = fill_opacity = 1;
 	}
-	virtual void draw(Graphics& graphics) = 0;
+	virtual void draw(Graphics& graphics, defs def) = 0;
 	virtual void get_max(float& max_width, float& max_height) = 0;
 };
 
@@ -64,14 +88,14 @@ public:
 class line : public shape {
 public:
 	point end;
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
 class rectangle : public shape {
 public:
 	float width, height;
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
@@ -81,7 +105,7 @@ public:
 	ellipse() {
 		rx = ry = 0;
 	}
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
@@ -92,21 +116,21 @@ public:
 	circle() {
 		r = 0;
 	}
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
 class polygon : public shape {
 public:
 	vector<point> p;
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
 class polyline : public shape{
 public:
 	vector<point> p;
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
@@ -126,7 +150,7 @@ public:
 		dx = dy = 0;
 
 	}
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override;
 };
 
@@ -140,7 +164,7 @@ public:
 	}
 	void read_single_point(string data, int& index, point& p);
 	float read_single_point(string data, int& index);
-	void draw(Graphics& graphics) override;
+	void draw(Graphics& graphics, defs def) override;
 	void get_max(float& max_width, float& max_height) override {
 		return;
 	}
@@ -149,7 +173,7 @@ public:
 class group {
 public:
 	unordered_map<string, string> attributes;
-	void traversal_group(rapidxml::xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes);
+	void traversal_group(rapidxml::xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes, defs& def);
 };
 
 class stop {
@@ -182,17 +206,18 @@ public:
 class gradient {
 public:
 	vector<stop*> stop_list;
-	//virtual void draw(Graphics& graphics);
 };
 
 class linearGradient : public gradient {
 public:
 	string id;
 	point start, end;
-	multi_transform trans;
+	bool percentage;
+	//multi_transform trans;
 	string units;
-
-	//void draw(Graphics& graphics);
+	linearGradient() {
+		percentage = false;
+	}
 };
 
 class radialGradient : public gradient {
@@ -206,12 +231,7 @@ public:
 		r = fx = fy = 0;
 	}
 
-	//void draw(Graphics& graphics);
 };
-
-
-
-
 
 class defs {
 public:
@@ -219,7 +239,7 @@ public:
 	vector<radialGradient*> rg_list;
 };
 
-vector<shape*> read_file(string file_name, float& max_width, float& max_height, viewBox& vb);
+vector<shape*> read_file(string file_name, float& max_width, float& max_height,defs& def);
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale);
 
 #endif

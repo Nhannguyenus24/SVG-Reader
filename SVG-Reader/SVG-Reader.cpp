@@ -142,6 +142,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     bool is_dragging = false;
     POINT last_mouse_position;
     vector<shape*> shapes;
+    defs def;
     switch (message)
     {
     case WM_COMMAND:
@@ -270,14 +271,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     case WM_PAINT:
         {
-            DrawAgain:
+        DrawAgain:
+            shapes = read_file(path, max_width, max_height, def);
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Graphics graphics(hdc);
-            vector<shape*> shapes = read_file(path, max_width, max_height);
             transform_image(graphics, Rotate, max_width + scroll_x, max_height + scroll_y , scroll_x, scroll_y, scale);
             for (int i = 0; i < shapes.size(); i++) {
-                shapes[i]->draw(graphics);
+                shapes[i]->draw(graphics, def);
             }
             EndPaint(hWnd, &ps);
             

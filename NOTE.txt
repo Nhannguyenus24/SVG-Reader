@@ -1,0 +1,3 @@
+- Chưa làm được stroke linear gradient
+- Chưa xử lý được radial gradient
+- Vẽ linear gradient không ra được màu

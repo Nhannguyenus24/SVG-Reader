@@ -1,6 +1,6 @@
 ﻿#include "Object.h"
 
-VOID line::draw(Graphics& graphics) {
+VOID line::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     int index = 0;
@@ -20,7 +20,6 @@ VOID line::draw(Graphics& graphics) {
 }
 
 void line::get_max(float& max_width, float& max_height) {
-
     if (start.x > max_width)
         max_width = start.x;
     else if (end.x > max_width)
@@ -31,7 +30,7 @@ void line::get_max(float& max_width, float& max_height) {
         max_width = end.y;
 }
 
-VOID rectangle::draw(Graphics& graphics) {
+VOID rectangle::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
@@ -60,7 +59,7 @@ void rectangle::get_max(float& max_width, float& max_height) {
         max_height = start.y + height;
 }
 
-VOID circle::draw(Graphics& graphics) {
+VOID circle::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
@@ -89,7 +88,7 @@ void circle::get_max(float& max_width, float& max_height) {
         max_height = start.y + r;
 }
 
-VOID ellipse::draw(Graphics& graphics) {
+VOID ellipse::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
@@ -118,7 +117,7 @@ void ellipse::get_max(float& max_width, float& max_height) {
         max_height = start.y + ry;
 }
 
-VOID polygon::draw(Graphics& graphics) {
+VOID polygon::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
@@ -154,7 +153,7 @@ void polygon::get_max(float& max_width, float& max_height) {
     }
 }
 
-VOID polyline::draw(Graphics& graphics) {
+VOID polyline::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     int index = 0;
@@ -190,7 +189,7 @@ void polyline::get_max(float& max_width, float& max_height) {
     }
 }
 
-VOID text::draw(Graphics& graphics) {
+VOID text::draw(Graphics& graphics, defs def) {
     for (int i = 0; i < text_.length(); i++) {
         if (text_[i] == '\n') {
             text_[i] = ' ';
@@ -338,7 +337,7 @@ float path::read_single_point(string data, int& index) {
     }
 }
 
-void path::draw(Graphics& graphics) {
+void path::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
@@ -369,6 +368,9 @@ void path::draw(Graphics& graphics) {
             start_point.x = current_point.x;
             start_point.y = current_point.y;
             last_command = 'z';
+        }
+        else if (data[index] == 'A') {
+
         }
         else if (data[index] == 'm') {
             read_single_point(data, index, d);
@@ -532,9 +534,24 @@ void path::draw(Graphics& graphics) {
      }
      else {
          pen.SetLineJoin(LineJoinMiter);
-    }
-
-    graphics.FillPath(&fillBrush, &path);
+     }
+     graphics.FillPath(&fillBrush, &path);
+     if (fill_id != "") {
+         for (int i = 0; i < def.lg_list.size(); i++) {
+             if (fill_id == def.lg_list[i]->id) {
+                 float* points = new float[def.lg_list[i]->stop_list.size()];
+                 Color* colors = new Color[def.lg_list[i]->stop_list.size()];
+                 for (int j = 0; j < def.lg_list[i]->stop_list.size(); j++) {
+                     points[j] = def.lg_list[i]->stop_list[j]->offset;
+                     colors[j] = Color(static_cast<int>(def.lg_list[i]->stop_list[j]->stop_opacity * 255), def.lg_list[i]->stop_list[j]->stop_color.red, def.lg_list[i]->stop_list[j]->stop_color.green, def.lg_list[i]->stop_list[j]->stop_color.blue);
+                 }
+                 LinearGradientBrush linGrBrush(PointF(def.lg_list[i]->start.x, def.lg_list[i]->start.y), PointF(def.lg_list[i]->end.x, def.lg_list[i]->end.y), colors[0], colors[def.lg_list[i]->stop_list.size() - 1]);
+                 linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i]->stop_list.size());
+                 graphics.FillPath(&linGrBrush, &path);
+                 break;
+             }
+         }
+     }
     if (stroke_width != 0)
         graphics.DrawPath(&pen, &path);
     graphics.Restore(save);
