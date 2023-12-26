@@ -287,6 +287,15 @@ void path::read_single_point(string data, int& index, point& p) {
             index++;
             continue;
         }
+        else if (data[index] == '.' && s1 == false && s2 == false && accept == false) {
+            n1 += data[index];
+            if (data[index - 1] == '-') {
+                negative1 = true;
+            }
+            s1 = true;
+            index++;
+            continue;
+        }
         else if (data[index] <= '9' && data[index] >= '0' && s1 == false && accept == true) {
             n2 += data[index];
             s2 = true;
@@ -296,6 +305,17 @@ void path::read_single_point(string data, int& index, point& p) {
             index++;
             continue;
         }
+        else if (data[index] == '.' && s1 == true && n1.find('.') != string::npos) {
+			n2 += data[index];
+			s2 = true;
+            if (data[index - 1] == '-') {
+				negative2 = true;
+			}
+			index++;
+            s1 = false;
+            accept = true;
+			continue;
+		}
         if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
             if (s1) {
                 n1 += data[index];
