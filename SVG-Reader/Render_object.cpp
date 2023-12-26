@@ -356,7 +356,7 @@ void path::draw(Graphics& graphics, defs def) {
     GraphicsPath path;
     point current_point;
     point start_point;
-    point d1, d2, d;
+    point d1, d2, d, d3;
     bool first_point = true;
     index = 0;
     float single_type;
@@ -371,6 +371,73 @@ void path::draw(Graphics& graphics, defs def) {
         }
         else if (data[index] == 'A') {
 
+        }
+        else if (data[index] == 'a') {
+
+        }
+        else if (data[index] == 'q') {
+            command_q:
+            read_single_point(data, ++index, d1);
+            read_single_point(data, ++index, d);
+            path.AddBezier(current_point.x, current_point.y, current_point.x + d1.x, current_point.y +d1.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x+ d.x, current_point.y + d.y);
+            current_point.x += d.x;
+            current_point.y += d.y;
+            last_command = 'q';
+        }
+        else if (data[index] == 'Q') {
+        command_Q:
+            read_single_point(data, ++index, d1);
+            read_single_point(data, ++index, d);
+            path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, d1.x, d1.y, d.x, d.y);
+            current_point.x = d.x;
+            current_point.y = d.y;
+            last_command = 'Q';
+        }
+        else if (data[index] == 's') {
+            command_s:
+            read_single_point(data, ++index, d3);
+            read_single_point(data, ++index, d);
+            if (last_command == 'c' || last_command == 'C') {
+                d1.x = 2 * current_point.x - d2.x;
+                d1.y = 2 * current_point.y - d2.y;
+            }
+            else if (last_command == 's' || last_command == 'S') {
+                d1.x = 2 * current_point.x - d2.x;
+                d1.y = 2 * current_point.y - d2.y;
+            }
+            else {
+                d1.x = current_point.x;
+                d1.y = current_point.y;
+            }
+            path.AddBezier(current_point.x, current_point.y, d1.x,d1.y, current_point.x + d3.x, current_point.y + d3.y, current_point.x + d.x, current_point.y + d.y);
+            current_point.x += d.x;
+            current_point.y += d.y;
+            d2.x = d3.x + current_point.x;
+            d2.y = d3.y + current_point.y;
+            last_command = 's';
+        }
+        else if (data[index] == 'S') {
+            command_S:
+            read_single_point(data, ++index, d3);
+            read_single_point(data, ++index, d);
+            if (last_command == 'c' || last_command == 'C') {
+				d1.x = 2 * current_point.x - d2.x;
+				d1.y = 2 * current_point.y - d2.y;
+			}
+            else if (last_command == 's' || last_command == 'S') {
+                d1.x = 2 * current_point.x - d2.x;
+                d1.y = 2 * current_point.y - d2.y;
+            }
+            else {
+				d1.x = current_point.x;
+				d1.y = current_point.y;
+			}
+            path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, d3.x, d3.y, d.x, d.y);
+            current_point.x = d.x;
+            current_point.y = d.y;
+            d2.x = d3.x;
+            d2.y = d3.y;
+            last_command = 'S';
         }
         else if (data[index] == 'm') {
             read_single_point(data, index, d);
@@ -454,6 +521,8 @@ void path::draw(Graphics& graphics, defs def) {
             read_single_point(data, ++index, d2);
             read_single_point(data, ++index, d);
             path.AddBezier(current_point.x, current_point.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x + d2.x, current_point.y + d2.y, current_point.x + d.x, current_point.y + d.y);
+            d2.x += current_point.x;
+            d2.y += current_point.y;
             current_point.x += d.x;
             current_point.y += d.y;
             last_command = 'c';
@@ -506,6 +575,18 @@ void path::draw(Graphics& graphics, defs def) {
                 break;
             case 'V':
                 goto command_V;
+                break;
+            case 's':
+                goto command_s;
+                break;
+            case 'S':
+                goto command_S;
+                break;
+            case 'q':
+                goto command_q;
+				break;
+            case 'Q':
+				goto command_Q;
                 break;
             }
         }
