@@ -316,11 +316,32 @@ void path::read_single_point(string data, int& index, point& p) {
             accept = true;
 			continue;
 		}
+        else if (data[index] == '.' && s1 == false && accept == true && s2 == false) {
+            n2 += data[index];
+            s2 = true;
+            if (data[index - 1] == '-') {
+                negative2 = true;
+            }
+            index++;
+            s1 = false;
+            accept = true;
+            continue;
+        }
         if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
             if (s1) {
                 n1 += data[index];
             }
             if (s2) {
+                if (data[index] == '.' && n2.find('.') != string::npos) {
+                    p.x = stof(n1);
+                    p.y = stof(n2);
+                    if (negative1)
+                        p.x *= -1;
+                    if (negative2)
+                        p.y *= -1;
+                    return;
+				}
+				else
                 n2 += data[index];
             }
         }
@@ -347,9 +368,21 @@ float path::read_single_point(string data, int& index) {
         else if (data[index] <= '9' && data[index] >= '0' && s == false) {
             n += data[index];
             s = true;
+            if (data[index - 1] == '-') {
+                negative = true;
+            }
             index++;
             continue;
         }
+        else if (data[index] == '.' && s == false) {
+			n += data[index];
+            if (data[index - 1] == '-') {
+                negative = true;
+            }
+			s = true;
+			index++;
+			continue;
+		}
         if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
             n += data[index];
         }
@@ -376,7 +409,7 @@ void path::draw(Graphics& graphics, defs def) {
     GraphicsPath path;
     point current_point;
     point start_point;
-    point d1, d2, d, d3;
+    point d1, d2, d, d3, r;
     bool first_point = true;
     index = 0;
     float single_type;
@@ -390,15 +423,31 @@ void path::draw(Graphics& graphics, defs def) {
             last_command = 'z';
         }
         else if (data[index] == 'A') {
-
+            command_A:
+            read_single_point(data, index, r);
+            float rotation = read_single_point(data, ++index);
+            float large_arc = read_single_point(data, ++index);
+            float sweep = read_single_point(data, ++index);
+            read_single_point(data, ++index, d);
+            current_point.x = d.x;
+            current_point.y = d.y;
+            last_command = 'A';
         }
         else if (data[index] == 'a') {
-
+        command_a:
+            read_single_point(data, index, r);
+            float rotation = read_single_point(data, ++index);
+            float large_arc = read_single_point(data, ++index);
+            float sweep = read_single_point(data, ++index);
+            read_single_point(data, ++index, d);
+            current_point.x += d.x;
+            current_point.y += d.y;
+            last_command = 'a';
         }
         else if (data[index] == 'q') {
             command_q:
-            read_single_point(data, ++index, d1);
-            read_single_point(data, ++index, d);
+            read_single_point(data, index, d1);
+            read_single_point(data, index, d);
             path.AddBezier(current_point.x, current_point.y, current_point.x + d1.x, current_point.y +d1.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x+ d.x, current_point.y + d.y);
             current_point.x += d.x;
             current_point.y += d.y;
@@ -406,8 +455,8 @@ void path::draw(Graphics& graphics, defs def) {
         }
         else if (data[index] == 'Q') {
         command_Q:
-            read_single_point(data, ++index, d1);
-            read_single_point(data, ++index, d);
+            read_single_point(data, index, d1);
+            read_single_point(data, index, d);
             path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, d1.x, d1.y, d.x, d.y);
             current_point.x = d.x;
             current_point.y = d.y;
@@ -415,8 +464,8 @@ void path::draw(Graphics& graphics, defs def) {
         }
         else if (data[index] == 's') {
             command_s:
-            read_single_point(data, ++index, d3);
-            read_single_point(data, ++index, d);
+            read_single_point(data, index, d3);
+            read_single_point(data, index, d);
             if (last_command == 'c' || last_command == 'C') {
                 d1.x = 2 * current_point.x - d2.x;
                 d1.y = 2 * current_point.y - d2.y;
@@ -438,8 +487,8 @@ void path::draw(Graphics& graphics, defs def) {
         }
         else if (data[index] == 'S') {
             command_S:
-            read_single_point(data, ++index, d3);
-            read_single_point(data, ++index, d);
+            read_single_point(data, index, d3);
+            read_single_point(data, index, d);
             if (last_command == 'c' || last_command == 'C') {
 				d1.x = 2 * current_point.x - d2.x;
 				d1.y = 2 * current_point.y - d2.y;
@@ -537,9 +586,9 @@ void path::draw(Graphics& graphics, defs def) {
         }
         else if (data[index] == 'c') {
         command_c:
-            read_single_point(data, ++index, d1);
-            read_single_point(data, ++index, d2);
-            read_single_point(data, ++index, d);
+            read_single_point(data, index, d1);
+            read_single_point(data, index, d2);
+            read_single_point(data, index, d);
             path.AddBezier(current_point.x, current_point.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x + d2.x, current_point.y + d2.y, current_point.x + d.x, current_point.y + d.y);
             d2.x += current_point.x;
             d2.y += current_point.y;
@@ -549,16 +598,15 @@ void path::draw(Graphics& graphics, defs def) {
         }
         else if (data[index] == 'C') {
         command_C:
-            read_single_point(data, ++index, d1);
-            read_single_point(data, ++index, d2);
-            read_single_point(data, ++index, d);
+            read_single_point(data, index, d1);
+            read_single_point(data, index, d2);
+            read_single_point(data, index, d);
             path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, d2.x, d2.y, d.x, d.y);
             current_point.x = d.x;
             current_point.y = d.y;
             last_command = 'C';
         }
-        else if (data[index] <= '9' && data[index] >= '0') {
-            index--;
+        else if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
             switch (last_command) {
             case 'm':
                 read_single_point(data, index, d);
@@ -604,9 +652,15 @@ void path::draw(Graphics& graphics, defs def) {
                 break;
             case 'q':
                 goto command_q;
-				break;
+                break;
             case 'Q':
-				goto command_Q;
+                goto command_Q;
+                break;
+            case 'a':
+                goto command_a;
+                break;
+            case 'A':
+                goto command_A;
                 break;
             }
         }
