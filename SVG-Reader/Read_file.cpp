@@ -105,6 +105,23 @@ float clarifyFloat(string s) {
     return stof(s);
 }
 
+void handleStyle(string s, string& fill_id, color& fill_color) {
+    stringstream ss(s);
+    string temp;
+    getline(ss, temp, ':');
+    getline(ss, temp);
+    string t = temp.substr(0, 3);
+    if (t == "url") {
+        stringstream ss_(temp);
+        string temp_;
+        getline(ss_, temp_, '#');
+        getline(ss_, temp_, ')');
+        fill_id = temp_;
+        return;
+    }
+    else fill_color = read_RGB(temp);
+}
+
 void readStop(string name, string value, stop& stop) {
     if (name == "stop-color") {
         stop.stop_color = read_RGB(value);
@@ -471,6 +488,9 @@ void read_rectangle(string name, string value, rectangle* rect) {
         else 
             rect->fill_color = read_RGB(value);
     }
+    else if (name == "style") {
+        handleStyle(value, rect->fill_id, rect->fill_color);
+    }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
 			rect->stroke_opacity = 0;
@@ -525,6 +545,9 @@ void read_ellipse(string name, string value, ellipse* elli) {
 		else
             elli->fill_color = read_RGB(value);
     }
+    else if (name == "style") {
+        handleStyle(value, elli->fill_id, elli->fill_color);
+    }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
             elli->stroke_opacity = 0;
@@ -574,6 +597,9 @@ void read_circle(string name, string value, circle* cir) {
         }
 		else 
 			cir->fill_color = read_RGB(value);
+    }
+    else if (name == "style") {
+        handleStyle(value, cir->fill_id, cir->fill_color);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
@@ -645,6 +671,9 @@ void read_path(string name, string value, path* path) {
 		}
         else
             path->fill_color = read_RGB(value);
+    }
+    else if (name == "style") {
+        handleStyle(value, path->fill_id, path->fill_color);
     }
     else if (name == "transform") {
 		read_transform(value, path->trans);
