@@ -1,3 +1,4 @@
-- Chưa làm được stroke linear gradient
-- Chưa xử lý được radial gradient
-- Vẽ linear gradient không ra được màu
+- chưa apply transform cho linear gradient
+- chưa xử lý định dạng e- trong path data
+- chưa xử lý được apply linear gradient từ radial
+- chưa xử lý radial

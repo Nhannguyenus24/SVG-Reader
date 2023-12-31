@@ -229,6 +229,7 @@ public:
 	string units, xlink_href;
 	radialGradient() {
 		r = fx = fy = 0;
+		xlink_href = "";
 	}
 
 };

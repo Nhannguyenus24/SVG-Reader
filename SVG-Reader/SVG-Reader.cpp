@@ -13,7 +13,7 @@ float Rotate = 0;
 float scroll_x = 0;
 float scroll_y = 0;
 float max_width = 0, max_height = 0;
-string path = "C:\\Users\\LENOVO\\Downloads\\TikTok_logo.svg";
+string path = "C:\\Users\\LENOVO\\Downloads\\\Instagram_logo_2016.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);

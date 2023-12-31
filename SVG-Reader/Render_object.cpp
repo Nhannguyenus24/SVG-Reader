@@ -263,7 +263,7 @@ void path::read_single_point(string data, int& index, point& p) {
     bool s1 = false, s2 = false, accept = false;
     bool negative1 = false, negative2 = false;
     while (true) {
-        if ((data[index] > '9' || data[index] < '0') && data[index] != '.') {
+        if ((data[index] > '9' || data[index] < '0') && data[index] != '.' && data[index] != 'e') {
             if (s1 == true) {
                 s1 = false;
                 accept = true;
@@ -306,16 +306,16 @@ void path::read_single_point(string data, int& index, point& p) {
             continue;
         }
         else if (data[index] == '.' && s1 == true && n1.find('.') != string::npos) {
-			n2 += data[index];
-			s2 = true;
+            n2 += data[index];
+            s2 = true;
             if (data[index - 1] == '-') {
-				negative2 = true;
-			}
-			index++;
+                negative2 = true;
+            }
+            index++;
             s1 = false;
             accept = true;
-			continue;
-		}
+            continue;
+        }
         else if (data[index] == '.' && s1 == false && accept == true && s2 == false) {
             n2 += data[index];
             s2 = true;
@@ -327,7 +327,7 @@ void path::read_single_point(string data, int& index, point& p) {
             accept = true;
             continue;
         }
-        if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
+        if (data[index] <= '9' && data[index] >= '0' || data[index] == '.' || data[index] == 'e') {
             if (s1) {
                 n1 += data[index];
             }
@@ -340,9 +340,9 @@ void path::read_single_point(string data, int& index, point& p) {
                     if (negative2)
                         p.y *= -1;
                     return;
-				}
-				else
-                n2 += data[index];
+                }
+                else
+                    n2 += data[index];
             }
         }
         index++;
@@ -375,14 +375,14 @@ float path::read_single_point(string data, int& index) {
             continue;
         }
         else if (data[index] == '.' && s == false) {
-			n += data[index];
+            n += data[index];
             if (data[index - 1] == '-') {
                 negative = true;
             }
-			s = true;
-			index++;
-			continue;
-		}
+            s = true;
+            index++;
+            continue;
+        }
         if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
             n += data[index];
         }
@@ -423,12 +423,41 @@ void path::draw(Graphics& graphics, defs def) {
             last_command = 'z';
         }
         else if (data[index] == 'A') {
-            command_A:
+        command_A:
             read_single_point(data, index, r);
             float rotation = read_single_point(data, ++index);
             float large_arc = read_single_point(data, ++index);
             float sweep = read_single_point(data, ++index);
             read_single_point(data, ++index, d);
+            float angle = rotation * 3.14159265358979323846 / 180.0f;
+            float cos_angle = cos(angle);
+            float sin_angle = sin(angle);
+            float cons = cos_angle * cos_angle - (sin_angle * -sin_angle);
+            d1.x = cons * (current_point.x - d.x) / 2.0f;
+            d1.y = cons * (current_point.y - d.y) / 2.0f;
+            float check_r = (d1.x * d1.x) / (r.x * r.x) + (d1.y * d1.y) / (r.y * r.y);
+            if (check_r > 1.0f) {
+                r.x *= sqrt(check_r);
+                r.y *= sqrt(check_r);
+            }
+            int sign = (large_arc == sweep) ? -1 : 1;
+            float num = abs(r.x * r.x * r.y * r.y - r.x * r.x * d1.y * d1.y - r.y * r.y * d1.x * d1.x);
+            float den = r.x * r.x * d1.y * d1.y + r.y * r.y * d1.x * d1.x;
+            d2.x = sign * sqrt(num / den) * r.x * d1.y / r.y;
+            d2.y = sign * sqrt(num / den) * -r.y * d1.x / r.x;
+            cons = cos_angle * cos_angle - (sin_angle * -sin_angle);
+            d3.x = cons * d2.x + (current_point.x + d.x) / 2.0f;
+            d3.y = cons * d2.y + (current_point.y + d.y) / 2.0f;
+            float angle1 = atan2((d1.y - d2.y) / r.y, (d1.x - d2.x) / r.x);
+            float angle2 = atan2((-d2.y - d1.y) / r.y, (-d2.x - d1.x) / r.x);
+            float delta_angle = angle2 - angle1;
+            if (sweep == 0 && delta_angle > 0) {
+                delta_angle -= 2 * 3.14159265358979323846;
+            }
+            else if (sweep == 1 && delta_angle < 0) {
+                delta_angle += 2 * 3.14159265358979323846;
+            }
+            path.AddArc(d3.x - r.x, d3.y - r.y, 2 * r.x, 2 * r.y, angle1 * 180.0f / 3.14159265358979323846, delta_angle * 180.0f / 3.14159265358979323846);
             current_point.x = d.x;
             current_point.y = d.y;
             last_command = 'A';
@@ -440,15 +469,46 @@ void path::draw(Graphics& graphics, defs def) {
             float large_arc = read_single_point(data, ++index);
             float sweep = read_single_point(data, ++index);
             read_single_point(data, ++index, d);
-            current_point.x += d.x;
-            current_point.y += d.y;
+            d.x += current_point.x;
+            d.y += current_point.y;
+            float angle = rotation * 3.14159265358979323846 / 180.0f;
+            float cos_angle = cos(angle);
+            float sin_angle = sin(angle);
+            float cons = cos_angle * cos_angle - (sin_angle * -sin_angle);
+            d1.x = cons * (current_point.x - d.x) / 2.0f;
+            d1.y = cons * (current_point.y - d.y) / 2.0f;
+            float check_r = (d1.x * d1.x) / (r.x * r.x) + (d1.y * d1.y) / (r.y * r.y);
+            if (check_r > 1.0f) {
+				r.x *= sqrt(check_r);
+				r.y *= sqrt(check_r);
+			}
+            int sign = (large_arc == sweep) ? -1 : 1;
+            float num = abs(r.x * r.x * r.y * r.y - r.x * r.x * d1.y * d1.y - r.y * r.y * d1.x * d1.x);
+            float den = r.x * r.x * d1.y * d1.y + r.y * r.y * d1.x * d1.x;
+            d2.x = sign * sqrt(num / den) * r.x * d1.y / r.y;
+            d2.y = sign * sqrt(num / den) * -r.y * d1.x / r.x;
+            cons = cos_angle * cos_angle - (sin_angle * -sin_angle);
+            d3.x = cons * d2.x + (current_point.x + d.x) / 2.0f;
+            d3.y = cons * d2.y + (current_point.y + d.y) / 2.0f;
+            float angle1 = atan2((d1.y - d2.y) / r.y, (d1.x - d2.x) / r.x);
+            float angle2 = atan2((-d2.y - d1.y) / r.y, (-d2.x - d1.x) / r.x);
+            float delta_angle = angle2 - angle1;
+            if (sweep == 0 && delta_angle > 0) {
+				delta_angle -= 2 * 3.14159265358979323846;
+			}
+            else if (sweep == 1 && delta_angle < 0) {
+				delta_angle += 2 * 3.14159265358979323846;
+			}
+            path.AddArc(d3.x - r.x, d3.y - r.y, 2 * r.x, 2 * r.y, angle1 * 180.0f / 3.14159265358979323846, delta_angle * 180.0f / 3.14159265358979323846);
+            current_point.x = d.x;
+            current_point.y = d.y;
             last_command = 'a';
         }
         else if (data[index] == 'q') {
-            command_q:
+        command_q:
             read_single_point(data, index, d1);
             read_single_point(data, index, d);
-            path.AddBezier(current_point.x, current_point.y, current_point.x + d1.x, current_point.y +d1.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x+ d.x, current_point.y + d.y);
+            path.AddBezier(current_point.x, current_point.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x + d1.x, current_point.y + d1.y, current_point.x + d.x, current_point.y + d.y);
             current_point.x += d.x;
             current_point.y += d.y;
             last_command = 'q';
@@ -463,7 +523,7 @@ void path::draw(Graphics& graphics, defs def) {
             last_command = 'Q';
         }
         else if (data[index] == 's') {
-            command_s:
+        command_s:
             read_single_point(data, index, d3);
             read_single_point(data, index, d);
             if (last_command == 'c' || last_command == 'C') {
@@ -478,7 +538,7 @@ void path::draw(Graphics& graphics, defs def) {
                 d1.x = current_point.x;
                 d1.y = current_point.y;
             }
-            path.AddBezier(current_point.x, current_point.y, d1.x,d1.y, current_point.x + d3.x, current_point.y + d3.y, current_point.x + d.x, current_point.y + d.y);
+            path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, current_point.x + d3.x, current_point.y + d3.y, current_point.x + d.x, current_point.y + d.y);
             current_point.x += d.x;
             current_point.y += d.y;
             d2.x = d3.x + current_point.x;
@@ -486,21 +546,21 @@ void path::draw(Graphics& graphics, defs def) {
             last_command = 's';
         }
         else if (data[index] == 'S') {
-            command_S:
+        command_S:
             read_single_point(data, index, d3);
             read_single_point(data, index, d);
             if (last_command == 'c' || last_command == 'C') {
-				d1.x = 2 * current_point.x - d2.x;
-				d1.y = 2 * current_point.y - d2.y;
-			}
+                d1.x = 2 * current_point.x - d2.x;
+                d1.y = 2 * current_point.y - d2.y;
+            }
             else if (last_command == 's' || last_command == 'S') {
                 d1.x = 2 * current_point.x - d2.x;
                 d1.y = 2 * current_point.y - d2.y;
             }
             else {
-				d1.x = current_point.x;
-				d1.y = current_point.y;
-			}
+                d1.x = current_point.x;
+                d1.y = current_point.y;
+            }
             path.AddBezier(current_point.x, current_point.y, d1.x, d1.y, d3.x, d3.y, d.x, d.y);
             current_point.x = d.x;
             current_point.y = d.y;
@@ -670,43 +730,63 @@ void path::draw(Graphics& graphics, defs def) {
     }
 
     if (linecap == "round") {
-         pen.SetStartCap(LineCapRound);
-         pen.SetEndCap(LineCapRound);
-     }
-     else if (linecap == "square") {
-         pen.SetStartCap(LineCapSquare);
-         pen.SetEndCap(LineCapSquare);
-     }
-     else {
-         pen.SetStartCap(LineCapFlat);
-         pen.SetEndCap(LineCapFlat);
+        pen.SetStartCap(LineCapRound);
+        pen.SetEndCap(LineCapRound);
     }
-     if (linejoin == "round") {
-         pen.SetLineJoin(LineJoinRound);
-     }
-     else if (linejoin == "bevel") {
-         pen.SetLineJoin(LineJoinBevel);
-     }
-     else {
-         pen.SetLineJoin(LineJoinMiter);
-     }
-     graphics.FillPath(&fillBrush, &path);
-     if (fill_id != "") {
-         for (int i = 0; i < def.lg_list.size(); i++) {
-             if (fill_id == def.lg_list[i].id) {
-                 float* points = new float[def.lg_list[i].stop_list.size()];
-                 Color* colors = new Color[def.lg_list[i].stop_list.size()];
-                 for (int j = 0; j < def.lg_list[i].stop_list.size(); j++) {
-                     points[j] = def.lg_list[i].stop_list[j].offset;
-                     colors[j] = Color(static_cast<int>(def.lg_list[i].stop_list[j].stop_opacity * 255), def.lg_list[i].stop_list[j].stop_color.red, def.lg_list[i].stop_list[j].stop_color.green, def.lg_list[i].stop_list[j].stop_color.blue);
-                 }
-                 LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
-                 linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
-                 graphics.FillPath(&linGrBrush, &path);
-                 break;
-             }
-         }
-     }
+    else if (linecap == "square") {
+        pen.SetStartCap(LineCapSquare);
+        pen.SetEndCap(LineCapSquare);
+    }
+    else {
+        pen.SetStartCap(LineCapFlat);
+        pen.SetEndCap(LineCapFlat);
+    }
+    if (linejoin == "round") {
+        pen.SetLineJoin(LineJoinRound);
+    }
+    else if (linejoin == "bevel") {
+        pen.SetLineJoin(LineJoinBevel);
+    }
+    else {
+        pen.SetLineJoin(LineJoinMiter);
+    }
+    if (fill_id != "") {
+        for (int i = 0; i < def.lg_list.size(); i++) {
+            if (fill_id == def.lg_list[i].id) {
+                int size = def.lg_list[i].stop_list.size();
+                if (def.lg_list[i].stop_list[0].offset != 0) {
+                    size++;
+                }
+                if (def.lg_list[i].stop_list[def.lg_list[i].stop_list.size() - 1].offset != 1) {
+                    size++;
+                }
+                float* points = new float[size];
+                if (def.lg_list[i].stop_list[0].offset != 0) {
+                    points[0] = 0;
+                }
+                if (def.lg_list[i].stop_list[def.lg_list[i].stop_list.size() - 1].offset != 1) {
+                    points[size - 1] = 1.0f;
+                }
+                Color* colors = new Color[def.lg_list[i].stop_list.size()];
+                for (int j = 0; j < def.lg_list[i].stop_list.size(); j++) {
+                    if (def.lg_list[i].stop_list[0].offset != 0) {
+                        points[j + 1] = def.lg_list[i].stop_list[j].offset;
+                    }
+                    else
+                        points[j] = def.lg_list[i].stop_list[j].offset;
+                    colors[j] = Color(static_cast<float>(def.lg_list[i].stop_list[j].stop_opacity * 255), def.lg_list[i].stop_list[j].stop_color.red, def.lg_list[i].stop_list[j].stop_color.green, def.lg_list[i].stop_list[j].stop_color.blue);
+                }
+                LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                graphics.FillPath(&linGrBrush, &path);
+                break;
+            }
+        }
+    }
+    else {
+        graphics.FillPath(&fillBrush, &path);
+    }
     if (stroke_width != 0)
         graphics.DrawPath(&pen, &path);
     graphics.Restore(save);

@@ -87,7 +87,7 @@ bool check(char a) {
 void remove_space(string& s) {
     for (int i = 1; i < s.length() - 1; i++) {
         if (!check(s[i])) {
-            if (s[i - 1] <= '9' && s[i - 1] >= '0' && ((s[i + 1] <= '9' && s[i + 1] >= '0') || s[i + 1] == '-') && s[i] != '.') {
+            if (s[i - 1] <= '9' && s[i - 1] >= '0' && ((s[i + 1] <= '9' && s[i + 1] >= '0') || s[i + 1] == '-' || s[i + 1] == '.') && s[i] != '.') {
                 s[i] = ',';
                 continue;
             }
@@ -103,10 +103,13 @@ float clarifyFloat(string s) {
     if (s[0] == '.') {
         s.insert(0, "0");
     }
+    if (s[0] == '-' && s[1] == '.') {
+        s.insert(1, "0");
+    }
     if (s[s.length() - 1] == '%') {
-		string str = s.substr(0, s.length() - 1);
+        string str = s.substr(0, s.length() - 1);
         return stof(str) / 100;
-	}
+    }
     return stof(s);
 }
 
@@ -135,9 +138,9 @@ void read_transform(string value, multi_transform& tr) {
             {
                 stringstream ss(value.substr(value.find("translate") + 10));
                 getline(ss, temp, ',');
-                tr.values.push_back(stof(temp));
+                tr.values.push_back(clarifyFloat(temp));
                 getline(ss, temp, ')');
-                tr.values.push_back(stof(temp));
+                tr.values.push_back(clarifyFloat(temp));
                 value = value.substr(value.find("translate") + 10);
             }
         }
@@ -159,12 +162,12 @@ void read_transform(string value, multi_transform& tr) {
                     }
                 }
                 if (vessel2.length() == 0) {
-                    tr.values.push_back(stof(vessel1));
-                    tr.values.push_back(stof(vessel1));
+                    tr.values.push_back(clarifyFloat(vessel1));
+                    tr.values.push_back(clarifyFloat(vessel1));
                 }
                 else {
-                    tr.values.push_back(stof(vessel1));
-                    tr.values.push_back(stof(vessel2));
+                    tr.values.push_back(clarifyFloat(vessel1));
+                    tr.values.push_back(clarifyFloat(vessel2));
                 }
                 value = value.substr(value.find("scale") + 6);
             }
@@ -174,9 +177,29 @@ void read_transform(string value, multi_transform& tr) {
             if (value.find("rotate") != string::npos) {
                 stringstream ss(value.substr(value.find("rotate") + 7));
                 getline(ss, temp, ')');
-                tr.values.push_back(stof(temp));
+                tr.values.push_back(clarifyFloat(temp));
                 value = value.substr(value.find("rotate") + 7);
             }
+        }
+        else if (value[i] == 'm' && value[i + 1] == 'a' && value[i + 2] == 't') {
+            tr.types.push_back("translate");
+            tr.types.push_back("scale");
+            tr.types.push_back("rotate");
+            string temp1, temp2, temp3, temp4, temp5;
+            stringstream ss(value);
+            getline(ss, temp, '(');
+            getline(ss, temp, ',');
+            getline(ss, temp1, ',');
+            getline(ss, temp2, ',');
+            getline(ss, temp3, ',');
+            getline(ss, temp4, ',');
+            getline(ss, temp5, ')');
+            tr.values.push_back(clarifyFloat(temp));
+            tr.values.push_back(clarifyFloat(temp1));
+            tr.values.push_back(clarifyFloat(temp2));
+            tr.values.push_back(clarifyFloat(temp3));
+            tr.values.push_back(clarifyFloat(temp4));
+            tr.values.push_back(clarifyFloat(temp5));
         }
     }
 }
