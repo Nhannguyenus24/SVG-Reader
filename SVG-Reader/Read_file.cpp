@@ -2,6 +2,11 @@
 
 //======================================= Reading area================================================================
 
+string trim(string str) {
+    str.erase(remove_if(str.begin(), str.end(), ::isspace), str.end());
+    return str;
+}
+
 color read_RGB(string value) {
     color colour;
     if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') {
@@ -103,23 +108,6 @@ float clarifyFloat(string s) {
         return stof(str) / 100;
 	}
     return stof(s);
-}
-
-void handleStyle(string s, string& fill_id, color& fill_color) {
-    stringstream ss(s);
-    string temp;
-    getline(ss, temp, ':');
-    getline(ss, temp);
-    string t = temp.substr(0, 3);
-    if (t == "url") {
-        stringstream ss_(temp);
-        string temp_;
-        getline(ss_, temp_, '#');
-        getline(ss_, temp_, ')');
-        fill_id = temp_;
-        return;
-    }
-    else fill_color = read_RGB(temp);
 }
 
 void readStop(string name, string value, stop& stop) {
@@ -335,6 +323,19 @@ void read_polygon(string name, string value, polygon* polygon) {
         string s = value;
         read_transform(value, polygon->trans);
     }
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_polygon(str1, str2, polygon);
+        }
+    }
 }
 
 void read_polyline(string name, string value, polyline* polyline) {
@@ -375,6 +376,20 @@ void read_polyline(string name, string value, polyline* polyline) {
     }
     else if (name == "transform") {
         read_transform(value, polyline->trans);
+    }
+
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_polyline(str1, str2, polyline);
+        }
     }
 }
 
@@ -432,6 +447,20 @@ void read_text(string name, string value, text* text) {
     else if (name == "text-anchor") {
         text->text_anchor = value;
     }
+
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_text(str1, str2, text);
+        }
+    }
 }
 
 void read_line(string name, string value, line* line) {
@@ -469,6 +498,20 @@ void read_line(string name, string value, line* line) {
     else if (name == "transform") {
         read_transform(value, line->trans);
     }
+
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_line(str1, str2, line);
+        }
+    }
 }
 
 void read_rectangle(string name, string value, rectangle* rect) {
@@ -487,9 +530,6 @@ void read_rectangle(string name, string value, rectangle* rect) {
         }
         else 
             rect->fill_color = read_RGB(value);
-    }
-    else if (name == "style") {
-        handleStyle(value, rect->fill_id, rect->fill_color);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
@@ -526,6 +566,20 @@ void read_rectangle(string name, string value, rectangle* rect) {
     else if (name == "transform") {
         read_transform(value, rect->trans);
     }
+
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_rectangle(str1, str2, rect);
+        }
+    }
 }
 
 void read_ellipse(string name, string value, ellipse* elli) {
@@ -544,9 +598,6 @@ void read_ellipse(string name, string value, ellipse* elli) {
         }
 		else
             elli->fill_color = read_RGB(value);
-    }
-    else if (name == "style") {
-        handleStyle(value, elli->fill_id, elli->fill_color);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
@@ -579,6 +630,20 @@ void read_ellipse(string name, string value, ellipse* elli) {
     else if (name == "transform") {
         read_transform(value, elli->trans);
     }
+
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_ellipse(str1, str2, elli);
+        }
+    }
 }
 
 void read_circle(string name, string value, circle* cir) {
@@ -597,9 +662,6 @@ void read_circle(string name, string value, circle* cir) {
         }
 		else 
 			cir->fill_color = read_RGB(value);
-    }
-    else if (name == "style") {
-        handleStyle(value, cir->fill_id, cir->fill_color);
     }
     else if (name == "stroke") {
         if (value == "none" || value == "transparent") {
@@ -628,6 +690,20 @@ void read_circle(string name, string value, circle* cir) {
     }
     else if (name == "transform") {
         read_transform(value, cir->trans);
+    }
+
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_circle(str1, str2, cir);
+        }
     }
 }
 void read_path(string name, string value, path* path) {
@@ -672,12 +748,22 @@ void read_path(string name, string value, path* path) {
         else
             path->fill_color = read_RGB(value);
     }
-    else if (name == "style") {
-        handleStyle(value, path->fill_id, path->fill_color);
-    }
     else if (name == "transform") {
 		read_transform(value, path->trans);
 	}
+    else if (name == "style") {
+        istringstream iss(trim(value));
+        string tmp;
+        while (getline(iss, tmp, ';')) {
+            string str1, str2;
+            size_t colonPos = tmp.find(':');
+            if (colonPos != string::npos) {
+                str1 = tmp.substr(0, colonPos);
+                str2 = tmp.substr(colonPos + 1);
+            }
+            read_path(str1, str2, path);
+        }
+    }
 }
 
 vector<shape*> read_file(string file_name, float& max_width, float& max_height, defs& def) {
