@@ -693,15 +693,15 @@ void path::draw(Graphics& graphics, defs def) {
      graphics.FillPath(&fillBrush, &path);
      if (fill_id != "") {
          for (int i = 0; i < def.lg_list.size(); i++) {
-             if (fill_id == def.lg_list[i]->id) {
-                 float* points = new float[def.lg_list[i]->stop_list.size()];
-                 Color* colors = new Color[def.lg_list[i]->stop_list.size()];
-                 for (int j = 0; j < def.lg_list[i]->stop_list.size(); j++) {
-                     points[j] = def.lg_list[i]->stop_list[j]->offset;
-                     colors[j] = Color(static_cast<int>(def.lg_list[i]->stop_list[j]->stop_opacity * 255), def.lg_list[i]->stop_list[j]->stop_color.red, def.lg_list[i]->stop_list[j]->stop_color.green, def.lg_list[i]->stop_list[j]->stop_color.blue);
+             if (fill_id == def.lg_list[i].id) {
+                 float* points = new float[def.lg_list[i].stop_list.size()];
+                 Color* colors = new Color[def.lg_list[i].stop_list.size()];
+                 for (int j = 0; j < def.lg_list[i].stop_list.size(); j++) {
+                     points[j] = def.lg_list[i].stop_list[j].offset;
+                     colors[j] = Color(static_cast<int>(def.lg_list[i].stop_list[j].stop_opacity * 255), def.lg_list[i].stop_list[j].stop_color.red, def.lg_list[i].stop_list[j].stop_color.green, def.lg_list[i].stop_list[j].stop_color.blue);
                  }
-                 LinearGradientBrush linGrBrush(PointF(def.lg_list[i]->start.x, def.lg_list[i]->start.y), PointF(def.lg_list[i]->end.x, def.lg_list[i]->end.y), colors[0], colors[def.lg_list[i]->stop_list.size() - 1]);
-                 linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i]->stop_list.size());
+                 LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                 linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
                  graphics.FillPath(&linGrBrush, &path);
                  break;
              }

@@ -105,92 +105,19 @@ float clarifyFloat(string s) {
     return stof(s);
 }
 
-void readStop(string name, string value, stop* stop) {
+void readStop(string name, string value, stop& stop) {
     if (name == "stop-color") {
-        stop->stop_color = read_RGB(value);
+        stop.stop_color = read_RGB(value);
     }
     else if (name == "stop-opacity") {
-        stop->stop_opacity = clarifyFloat(value);
+        stop.stop_opacity = clarifyFloat(value);
     }
     else if (name == "offset") {
-        stop->offset = clarifyFloat(value);
+        stop.offset = clarifyFloat(value);
     }
 }
 
-void readLinearGradient(string name, string value, linearGradient* lg) {
-    if (name == "id") {
-        lg->id = value;
-    }
-    else if (name == "x1") {
-        if (value[value.length() - 1] == '%') {
-			lg->percentage = true;
-			lg->start.x = clarifyFloat(value.substr(0, value.length() - 1));
-		}
-        else {
-			lg->start.x = stof(value);
-		}
-    }
-    else if (name == "x2") {
-        if (value[value.length() - 1] == '%') {
-            lg->end.x = clarifyFloat(value.substr(0, value.length() - 1));
-        }
-        else 
-            lg->end.x = stof(value);
-    }
-    else if (name == "y1") {
-        if (value[value.length() - 1] == '%') {
-			lg->start.y = clarifyFloat(value.substr(0, value.length() - 1));
-		}
-		else 
-			lg->start.y = stof(value);
-    }
-    else if (name == "y2") {
-        if (value[value.length() - 1] == '%') {
-            lg->end.y = clarifyFloat(value.substr(0, value.length() - 1));
-        }
-        else 
-			lg->end.y = stof(value);
-    }
-    else if (name == "gradientTransform") {
-        //read_transform(value, lg->trans);
-    }
-    else if (name == "gradientUnits") {
-        lg->units = value;
-    }
-}
-
-void readRadialGradient(string name, string value, radialGradient* rg) {
-    if (name == "id") {
-        rg->id = value;
-    }
-    else if (name == "cx") {
-        rg->center.x = stof(value);
-    }
-    else if (name == "cy") {
-        rg->center.y = stof(value);
-    }
-    else if (name == "r") {
-        rg->r = stof(value);
-    }
-    else if (name == "xlink:href") {
-        rg->xlink_href = value;
-    }
-    else if (name == "gradientTransform") {
-        //read_transform(value, rg->trans);
-    }
-    else if (name == "gradientUnits") {
-        rg->units = value;
-    }
-    else if (name == "fx") {
-        rg->fx = stof(value);
-    }
-    else if (name == "fy") {
-        rg->fy = stof(value);
-    }
-}
-
-
-void read_transform(string value,  multi_transform& tr) {
+void read_transform(string value, multi_transform& tr) {
     string temp = value;
     string vessel1 = "", vessel2 = "";
     bool change = true;
@@ -208,7 +135,7 @@ void read_transform(string value,  multi_transform& tr) {
                 tr.values.push_back(stof(temp));
                 value = value.substr(value.find("translate") + 10);
             }
-		}
+        }
         else if (value[i] == 's' && value[i + 1] == 'c') {
             tr.types.push_back("scale");
             if (value.find("scale") != string::npos) {
@@ -240,12 +167,84 @@ void read_transform(string value,  multi_transform& tr) {
         else if (value[i] == 'r' && value[i + 1] == 'o') {
             tr.types.push_back("rotate");
             if (value.find("rotate") != string::npos) {
-				stringstream ss(value.substr(value.find("rotate") + 7));
-				getline(ss, temp, ')');
-				tr.values.push_back(stof(temp));
+                stringstream ss(value.substr(value.find("rotate") + 7));
+                getline(ss, temp, ')');
+                tr.values.push_back(stof(temp));
                 value = value.substr(value.find("rotate") + 7);
-			}
+            }
+        }
+    }
+}
+
+void readLinearGradient(string name, string value, linearGradient& lg) {
+    if (name == "id") {
+        lg.id = value;
+    }
+    else if (name == "x1") {
+        if (value[value.length() - 1] == '%') {
+			lg.percentage = true;
+			lg.start.x = clarifyFloat(value.substr(0, value.length() - 1));
 		}
+        else {
+			lg.start.x = stof(value);
+		}
+    }
+    else if (name == "x2") {
+        if (value[value.length() - 1] == '%') {
+            lg.end.x = clarifyFloat(value.substr(0, value.length() - 1));
+        }
+        else 
+            lg.end.x = stof(value);
+    }
+    else if (name == "y1") {
+        if (value[value.length() - 1] == '%') {
+			lg.start.y = clarifyFloat(value.substr(0, value.length() - 1));
+		}
+		else 
+			lg.start.y = stof(value);
+    }
+    else if (name == "y2") {
+        if (value[value.length() - 1] == '%') {
+            lg.end.y = clarifyFloat(value.substr(0, value.length() - 1));
+        }
+        else 
+			lg.end.y = stof(value);
+    }
+    else if (name == "gradientTransform") {
+        read_transform(value, lg.trans);
+    }
+    else if (name == "gradientUnits") {
+        lg.units = value;
+    }
+}
+
+void readRadialGradient(string name, string value, radialGradient& rg) {
+    if (name == "id") {
+        rg.id = value;
+    }
+    else if (name == "cx") {
+        rg.center.x = stof(value);
+    }
+    else if (name == "cy") {
+        rg.center.y = stof(value);
+    }
+    else if (name == "r") {
+        rg.r = stof(value);
+    }
+    else if (name == "xlink:href") {
+        rg.xlink_href = value;
+    }
+    else if (name == "gradientTransform") {
+        read_transform(value, rg.trans);
+    }
+    else if (name == "gradientUnits") {
+        rg.units = value;
+    }
+    else if (name == "fx") {
+        rg.fx = stof(value);
+    }
+    else if (name == "fy") {
+        rg.fy = stof(value);
     }
 }
 
@@ -801,33 +800,35 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (rapidxml::xml_node<>* child = node->first_node(); child; child = child->next_sibling()) {
                 string child_name = child->name();
                 if (child_name == "linearGradient") {
-                    linearGradient* lg = new linearGradient;
+                    linearGradient lg;
                     for (rapidxml::xml_attribute<>* attribute = child->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                         readLinearGradient(attribute->name(), attribute->value(), lg);
                     }
                     for (rapidxml::xml_node<>* grandchild = child->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
-                        if (grandchild->name() == "stop") {
-                            stop* new_stop = new stop;
+                        string s = grandchild->name();
+                        if (s == "stop") {
+                            stop new_stop;
                             for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                                 readStop(attribute->name(), attribute->value(), new_stop);
                             }
-                            lg->stop_list.push_back(new_stop);
+                            lg.stop_list.push_back(new_stop);
                         }
                     }
                     def.lg_list.push_back(lg);
                 }
                 else if (child_name == "radialGradient") {
-                    radialGradient* rg = new radialGradient;
+                    radialGradient rg;
                     for (rapidxml::xml_attribute<>* attribute = child->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                         readRadialGradient(attribute->name(), attribute->value(), rg);
                     }
                     for (rapidxml::xml_node<>* grandchild = child->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
-                        if (grandchild->name() == "stop") {
-                            stop* new_stop = new stop;
+                        string s = grandchild->name();
+                        if (s == "stop") {
+                            stop new_stop;
                             for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                                 readStop(attribute->name(), attribute->value(), new_stop);
                             }
-                            rg->stop_list.push_back(new_stop);
+                            rg.stop_list.push_back(new_stop);
                         }
                     }
                     def.rg_list.push_back(rg);
@@ -836,37 +837,39 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
         }
         else if (name == "linearGradient") {
-            linearGradient* lg = new linearGradient;
+            linearGradient lg;
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 readLinearGradient(attribute->name(), attribute->value(), lg);
             }
             for (rapidxml::xml_node<>* grandchild = node->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
-                if (grandchild->name() == "stop") {
-                    stop* new_stop = new stop;
+                string s = grandchild->name();
+                if (s == "stop") {
+                    stop new_stop;
                     for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                         readStop(attribute->name(), attribute->value(), new_stop);
                     }
-                    lg->stop_list.push_back(new_stop);
+                    lg.stop_list.push_back(new_stop);
                 }
             }
             def.lg_list.push_back(lg);
-        }
+            }
         else if (name == "radialGradient") {
-            radialGradient* rg = new radialGradient;
-            for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                readRadialGradient(attribute->name(), attribute->value(), rg);
-            }
-            for (rapidxml::xml_node<>* grandchild = node->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
-                if (grandchild->name() == "stop") {
-                    stop* new_stop = new stop;
-                    for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
-                        readStop(attribute->name(), attribute->value(), new_stop);
-                    }
-                    rg->stop_list.push_back(new_stop);
+                radialGradient rg;
+                for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                    readRadialGradient(attribute->name(), attribute->value(), rg);
                 }
-            }
-            def.rg_list.push_back(rg);
-        }
+                for (rapidxml::xml_node<>* grandchild = node->first_node(); grandchild; grandchild = grandchild->next_sibling()) {
+                    string s = grandchild->name();
+                    if (s == "stop") {
+                        stop new_stop;
+                        for (rapidxml::xml_attribute<>* attribute = grandchild->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+                            readStop(attribute->name(), attribute->value(), new_stop);
+                        }
+                        rg.stop_list.push_back(new_stop);
+                    }
+                }
+                def.rg_list.push_back(rg);
+                }
     }
 }
 

@@ -205,7 +205,7 @@ public:
 
 class gradient {
 public:
-	vector<stop*> stop_list;
+	vector<stop> stop_list;
 };
 
 class linearGradient : public gradient {
@@ -213,7 +213,7 @@ public:
 	string id;
 	point start, end;
 	bool percentage;
-	//multi_transform trans;
+	multi_transform trans;
 	string units;
 	linearGradient() {
 		percentage = false;
@@ -235,8 +235,8 @@ public:
 
 class defs {
 public:
-	vector<linearGradient*> lg_list;
-	vector<radialGradient*> rg_list;
+	vector<linearGradient> lg_list;
+	vector<radialGradient> rg_list;
 };
 
 vector<shape*> read_file(string file_name, float& max_width, float& max_height,defs& def);
