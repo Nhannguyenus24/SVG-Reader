@@ -200,6 +200,7 @@ void read_transform(string value, multi_transform& tr) {
             tr.values.push_back(clarifyFloat(temp3));
             tr.values.push_back(clarifyFloat(temp4));
             tr.values.push_back(clarifyFloat(temp5));
+            break;
         }
     }
 }
@@ -789,7 +790,7 @@ void read_path(string name, string value, path* path) {
     }
 }
 
-vector<shape*> read_file(string file_name, float& max_width, float& max_height, defs& def) {
+vector<shape*> read_file(string file_name, float& max_width, float& max_height, defs& def, viewBox& vb) {
     vector<shape*> shapes;
     ifstream file(file_name);
     // Đọc nội dung của tệp vào một vector<char>
@@ -804,18 +805,37 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height, 
 
     // Lấy nút gốc (root node) của tài liệu
     xml_node<>* root = doc.first_node("svg");
-    //if (root) {
-    //    // Find the 'viewBox' attribute within the root 'svg' node
-    //    rapidxml::xml_attribute<>* viewBoxAttr = root->first_attribute("viewBox");
-
-    //    if (viewBoxAttr) {
-    //        std::string viewBoxStr = viewBoxAttr->value();
-    //        vb.setViewBoxAttribute(viewBoxStr);
-    //    }
-    //}
+    for (xml_attribute<>* attribute = root->first_attribute(); attribute; attribute = attribute->next_attribute()) {
+        string attribute_name = attribute->name();
+        string attribute_value = attribute->value();
+        if (attribute_name == "viewBox") {
+            vb.setViewBoxAttribute(attribute_value);
+        }
+        else if (attribute_name == "width") {
+            if (attribute_value[attribute_value.length() - 1] == 'x')
+                attribute_value = attribute_value.substr(0, attribute_value.length() - 2);
+			vb.width = stof(attribute_value);
+		}
+        else if (attribute_name == "height") {
+            if (attribute_value[attribute_value.length() - 1] == 'x')
+				attribute_value = attribute_value.substr(0, attribute_value.length() - 2);
+			vb.height = stof(attribute_value);
+		}
+    }
     max_width = 0, max_height = 0;
     group g;
     g.traversal_group(root, max_width, max_height, shapes, def);
+    for (int i = 0; i < def.rg_list.size(); i++) {
+        if (def.rg_list[i].xlink_href != "") {
+            string id = def.rg_list[i].xlink_href.substr(1);
+            for (int j = 0; j < def.lg_list.size(); j++) {
+                if (def.lg_list[j].id == id) {
+					def.rg_list[i].stop_list = def.lg_list[j].stop_list;
+					break;
+				}
+            }
+        }
+    }
     return shapes;
 }
 void group::traversal_group(xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes, defs& def) {

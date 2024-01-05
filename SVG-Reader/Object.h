@@ -189,35 +189,35 @@ public:
 
 class viewBox {
 public:
-	double width, height, min_x, min_y;
+	float width, height, min_x, min_y;
+	float width_viewbox, height_viewbox;
 	viewBox()
 	{
-		width = 300;
-		height = 200;
+		width = 800;
+		height = 600;
 		min_x = 0;
 		min_y = 0;
 	}
 	void setViewBoxAttribute(const string& viewBoxStr) {
 		istringstream iss(viewBoxStr);
-		iss >> min_x >> min_y >> width >> height;
+		iss >> min_x >> min_y >> width_viewbox >> height_viewbox;
 	}
 };
 
 class gradient {
 public:
 	vector<stop> stop_list;
+	float* get_point_list();
+	Color* get_color_list();
 };
 
 class linearGradient : public gradient {
 public:
 	string id;
 	point start, end;
-	bool percentage;
 	multi_transform trans;
 	string units;
-	linearGradient() {
-		percentage = false;
-	}
+	bool percentage;
 };
 
 class radialGradient : public gradient {
@@ -240,7 +240,7 @@ public:
 	vector<radialGradient> rg_list;
 };
 
-vector<shape*> read_file(string file_name, float& max_width, float& max_height,defs& def);
+vector<shape*> read_file(string file_name, float& max_width, float& max_height,defs& def, viewBox& vb);
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale);
 
 #endif

@@ -13,7 +13,7 @@ float Rotate = 0;
 float scroll_x = 0;
 float scroll_y = 0;
 float max_width = 0, max_height = 0;
-string path = "C:\\Users\\LENOVO\\Downloads\\\Instagram_logo_2016.svg";
+string path = "C:\\Users\\LENOVO\\Downloads\\svg-04.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -141,8 +141,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     GdiplusStartup(&token, &gdiplusStartupInput, nullptr);
     bool is_dragging = false;
     POINT last_mouse_position;
-    vector<shape*> shapes;
     defs def;
+    viewBox vb;
+    vector<shape*> shapes = read_file(path, max_width, max_height, def, vb);
     switch (message)
     {
     case WM_COMMAND:
@@ -272,10 +273,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
         {
         DrawAgain:
-            shapes = read_file(path, max_width, max_height, def);
+            
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Graphics graphics(hdc);
+            graphics.ScaleTransform(static_cast<float>(ps.rcPaint.bottom) / vb.width_viewbox, static_cast<float>(ps.rcPaint.bottom) / vb.height_viewbox);
+            graphics.TranslateTransform(vb.min_x, vb.min_y);
             transform_image(graphics, Rotate, max_width + scroll_x, max_height + scroll_y , scroll_x, scroll_y, scale);
             for (int i = 0; i < shapes.size(); i++) {
                 shapes[i]->draw(graphics, def);

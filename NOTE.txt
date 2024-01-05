@@ -1,4 +1,0 @@
-- chưa apply transform cho linear gradient
-- chưa xử lý định dạng e- trong path data
-- chưa xử lý được apply linear gradient từ radial
-- chưa xử lý radial

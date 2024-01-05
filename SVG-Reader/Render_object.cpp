@@ -1,5 +1,28 @@
 ﻿#include "Object.h"
 
+void apply_transform(LinearGradientBrush& lgbrush, multi_transform trans) {
+    int index = 0;
+    if (trans.types.size() == 0)
+        return;
+    if (trans.types.size() == 3) {
+        Matrix matrix(trans.values[0], trans.values[1], trans.values[2], trans.values[3], trans.values[4], trans.values[5]);
+        lgbrush.MultiplyTransform(&matrix, MatrixOrderAppend);
+        return;
+    }
+    if (trans.types[0] == "translate") {
+        lgbrush.TranslateTransform(trans.values[index], trans.values[index + 1], MatrixOrderAppend);
+        return;
+    }
+    if (trans.types[0] == "rotate") {
+        lgbrush.RotateTransform(trans.values[index], MatrixOrderAppend);
+        return;
+    }
+    if (trans.types[0] == "scale") {
+        lgbrush.ScaleTransform(trans.values[index], MatrixOrderAppend);
+        return;
+    }
+}
+
 VOID line::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
@@ -46,7 +69,38 @@ VOID rectangle::draw(Graphics& graphics, defs def) {
         if (trans.types[i] == "rotate")
             index--;
     }
-    graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
+    if (fill_id != "") {
+        for (int i = 0; i < def.lg_list.size(); i++) {
+            if (fill_id == def.lg_list[i].id) {
+                float* points = def.lg_list[i].get_point_list();
+                Color* colors = def.lg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                apply_transform(linGrBrush, def.lg_list[i].trans);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                graphics.FillRectangle(&linGrBrush, start.x, start.y, width, height);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+        for (int i = 0; i < def.rg_list.size(); i++) {
+            if (fill_id == def.rg_list[i].id) {
+                float* points = def.rg_list[i].get_point_list();
+                Color* colors = def.rg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                apply_transform(linGrBrush, def.rg_list[i].trans);
+                graphics.FillRectangle(&linGrBrush, start.x, start.y, width, height);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+    }
+    else {
+        graphics.FillRectangle(&fillBrush, start.x, start.y, width, height);
+    }
     if (stroke_width != 0)
         graphics.DrawRectangle(&pen, start.x, start.y, width, height);
     graphics.Restore(save);
@@ -75,7 +129,38 @@ VOID circle::draw(Graphics& graphics, defs def) {
         if (trans.types[i] == "rotate")
             index--;
     }
-    graphics.FillEllipse(&fillBrush, start.x - r, start.y - r, 2 * r, 2 * r);
+    if (fill_id != "") {
+        for (int i = 0; i < def.lg_list.size(); i++) {
+            if (fill_id == def.lg_list[i].id) {
+                float* points = def.lg_list[i].get_point_list();
+                Color* colors = def.lg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                apply_transform(linGrBrush, def.lg_list[i].trans);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                graphics.FillEllipse(&linGrBrush, start.x - r, start.y - r, 2 * r, 2 * r);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+        for (int i = 0; i < def.rg_list.size(); i++) {
+            if (fill_id == def.rg_list[i].id) {
+                float* points = def.rg_list[i].get_point_list();
+                Color* colors = def.rg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                apply_transform(linGrBrush, def.rg_list[i].trans);
+                graphics.FillEllipse(&linGrBrush, start.x - r, start.y - r, 2 * r, 2 * r);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+    }
+    else {
+        graphics.FillEllipse(&fillBrush, start.x - r, start.y - r, 2 * r, 2 * r);
+    }
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - r, start.y - r, 2 * r, 2 * r);
     graphics.Restore(save);
@@ -104,7 +189,38 @@ VOID ellipse::draw(Graphics& graphics, defs def) {
         if (trans.types[i] == "rotate")
             index--;
     }
-    graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
+    if (fill_id != "") {
+        for (int i = 0; i < def.lg_list.size(); i++) {
+            if (fill_id == def.lg_list[i].id) {
+                float* points = def.lg_list[i].get_point_list();
+                Color* colors = def.lg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                apply_transform(linGrBrush, def.lg_list[i].trans);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                graphics.FillEllipse(&linGrBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+        for (int i = 0; i < def.rg_list.size(); i++) {
+            if (fill_id == def.rg_list[i].id) {
+                float* points = def.rg_list[i].get_point_list();
+                Color* colors = def.rg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                apply_transform(linGrBrush, def.rg_list[i].trans);
+                graphics.FillEllipse(&linGrBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+    }
+    else {
+        graphics.FillEllipse(&fillBrush, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
+    }
     if (stroke_width != 0)
         graphics.DrawEllipse(&pen, start.x - rx, start.y - ry, 2 * rx, 2 * ry);
     graphics.Restore(save);
@@ -137,7 +253,38 @@ VOID polygon::draw(Graphics& graphics, defs def) {
     for (int i = 0; i < p.size(); i++) {
         point[i] = Point(p[i].x, p[i].y);
     }
-    graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()), FillModeWinding);
+    if (fill_id != "") {
+        for (int i = 0; i < def.lg_list.size(); i++) {
+            if (fill_id == def.lg_list[i].id) {
+                float* points = def.lg_list[i].get_point_list();
+                Color* colors = def.lg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                apply_transform(linGrBrush, def.lg_list[i].trans);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                graphics.FillPolygon(&linGrBrush, point, static_cast<int>(p.size()), FillModeWinding);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+        for (int i = 0; i < def.rg_list.size(); i++) {
+            if (fill_id == def.rg_list[i].id) {
+                float* points = def.rg_list[i].get_point_list();
+                Color* colors = def.rg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                apply_transform(linGrBrush, def.rg_list[i].trans);
+                graphics.FillPolygon(&linGrBrush, point, static_cast<int>(p.size()), FillModeWinding);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+    }
+    else {
+        graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()), FillModeWinding);
+    }
     if (stroke_width != 0)
         graphics.DrawPolygon(&pen, point, static_cast<int>(p.size()));
     delete[] point;
@@ -173,7 +320,38 @@ VOID polyline::draw(Graphics& graphics, defs def) {
         point[i] = Point(p[i].x, p[i].y);
     }
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
-    graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()), FillModeWinding);
+    if (fill_id != "") {
+        for (int i = 0; i < def.lg_list.size(); i++) {
+            if (fill_id == def.lg_list[i].id) {
+                float* points = def.lg_list[i].get_point_list();
+                Color* colors = def.lg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
+                apply_transform(linGrBrush, def.lg_list[i].trans);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                graphics.FillPolygon(&linGrBrush, point, static_cast<int>(p.size()), FillModeWinding);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+        for (int i = 0; i < def.rg_list.size(); i++) {
+            if (fill_id == def.rg_list[i].id) {
+                float* points = def.rg_list[i].get_point_list();
+                Color* colors = def.rg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                apply_transform(linGrBrush, def.rg_list[i].trans);
+                graphics.FillPolygon(&linGrBrush, point, static_cast<int>(p.size()), FillModeWinding);
+                delete[] points;
+                delete[] colors;
+                break;
+            }
+        }
+    }
+    else {
+        graphics.FillPolygon(&fillBrush, point, static_cast<int>(p.size()), FillModeWinding);
+    }
     if (stroke_width != 0)
         graphics.DrawLines(&pen, point, static_cast<int>(p.size()));
     delete[] point;
@@ -258,6 +436,8 @@ void text::get_max(float& max_width, float& max_height) {
         max_height = start.y - font_size;
 }
 
+
+
 void path::read_single_point(string data, int& index, point& p) {
     string n1 = "0", n2 = "0";
     bool s1 = false, s2 = false, accept = false;
@@ -329,9 +509,21 @@ void path::read_single_point(string data, int& index, point& p) {
         }
         if (data[index] <= '9' && data[index] >= '0' || data[index] == '.' || data[index] == 'e') {
             if (s1) {
+                if (data[index] == 'e') {
+					n1 += data[index];
+                    n1 += data[index + 1];
+					index += 2;
+					continue;
+				}
                 n1 += data[index];
             }
             if (s2) {
+                if (data[index] == 'e') {
+                    n2 += data[index];
+                    n2 += data[index + 1];
+                    index += 2;
+                    continue;
+                }
                 if (data[index] == '.' && n2.find('.') != string::npos) {
                     p.x = stof(n1);
                     p.y = stof(n2);
@@ -354,10 +546,10 @@ float path::read_single_point(string data, int& index) {
     bool s = false;
     bool negative = false;
     while (true) {
-        if (data[index] == '-' && data[index + 1] <= '9' && data[index + 1] >= '0') {
+        if (data[index] == '-' && data[index + 1] <= '9' && data[index + 1] >= '0' && n == "0") {
             negative = true;
         }
-        if (data[index] > '9' || data[index] < '0' && data[index] != '.') {
+        if ((data[index] > '9' || data[index] < '0') && data[index] != '.' && data[index] != 'e') {
             if (s == true) {
                 float result = stof(n);
                 if (negative)
@@ -383,7 +575,13 @@ float path::read_single_point(string data, int& index) {
             index++;
             continue;
         }
-        if (data[index] <= '9' && data[index] >= '0' || data[index] == '.') {
+        if (data[index] <= '9' && data[index] >= '0' || data[index] == '.' || data[index] == 'e') {
+            if (data[index] == 'e') {
+				n += data[index];
+				n += data[index + 1];
+				index += 2;
+				continue;
+			}
             n += data[index];
         }
         index++;
@@ -457,7 +655,7 @@ void path::draw(Graphics& graphics, defs def) {
             else if (sweep == 1 && delta_angle < 0) {
                 delta_angle += 2 * 3.14159265358979323846;
             }
-            path.AddArc(d3.x - r.x, d3.y - r.y, 2 * r.x, 2 * r.y, angle1 * 180.0f / 3.14159265358979323846, delta_angle * 180.0f / 3.14159265358979323846);
+            path.AddArc(d3.x - r.x, d3.y - r.y, 2 * r.x, 2 * r.y, fmod((long double)(angle1 * 180.0f) / 3.14159265358979323846, 360), fmod((long double)(delta_angle * 180.0f) / 3.14159265358979323846, 360));
             current_point.x = d.x;
             current_point.y = d.y;
             last_command = 'A';
@@ -499,7 +697,7 @@ void path::draw(Graphics& graphics, defs def) {
             else if (sweep == 1 && delta_angle < 0) {
 				delta_angle += 2 * 3.14159265358979323846;
 			}
-            path.AddArc(d3.x - r.x, d3.y - r.y, 2 * r.x, 2 * r.y, angle1 * 180.0f / 3.14159265358979323846, delta_angle * 180.0f / 3.14159265358979323846);
+            path.AddArc(d3.x - r.x, d3.y - r.y, 2 * r.x, 2 * r.y, fmod((long double)(angle1 * 180.0f) / 3.14159265358979323846, 360), fmod((long double)(delta_angle * 180.0f) / 3.14159265358979323846, 360));
             current_point.x = d.x;
             current_point.y = d.y;
             last_command = 'a';
@@ -753,33 +951,29 @@ void path::draw(Graphics& graphics, defs def) {
     if (fill_id != "") {
         for (int i = 0; i < def.lg_list.size(); i++) {
             if (fill_id == def.lg_list[i].id) {
-                int size = def.lg_list[i].stop_list.size();
-                if (def.lg_list[i].stop_list[0].offset != 0) {
-                    size++;
-                }
-                if (def.lg_list[i].stop_list[def.lg_list[i].stop_list.size() - 1].offset != 1) {
-                    size++;
-                }
-                float* points = new float[size];
-                if (def.lg_list[i].stop_list[0].offset != 0) {
-                    points[0] = 0;
-                }
-                if (def.lg_list[i].stop_list[def.lg_list[i].stop_list.size() - 1].offset != 1) {
-                    points[size - 1] = 1.0f;
-                }
-                Color* colors = new Color[def.lg_list[i].stop_list.size()];
-                for (int j = 0; j < def.lg_list[i].stop_list.size(); j++) {
-                    if (def.lg_list[i].stop_list[0].offset != 0) {
-                        points[j + 1] = def.lg_list[i].stop_list[j].offset;
-                    }
-                    else
-                        points[j] = def.lg_list[i].stop_list[j].offset;
-                    colors[j] = Color(static_cast<float>(def.lg_list[i].stop_list[j].stop_opacity * 255), def.lg_list[i].stop_list[j].stop_color.red, def.lg_list[i].stop_list[j].stop_color.green, def.lg_list[i].stop_list[j].stop_color.blue);
-                }
+                float* points = def.lg_list[i].get_point_list();
+                Color* colors = def.lg_list[i].get_color_list(); 
                 LinearGradientBrush linGrBrush(PointF(def.lg_list[i].start.x, def.lg_list[i].start.y), PointF(def.lg_list[i].end.x, def.lg_list[i].end.y), colors[0], colors[def.lg_list[i].stop_list.size() - 1]);
-                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
+                apply_transform(linGrBrush, def.lg_list[i].trans);
                 linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.lg_list[i].stop_list.size());
                 graphics.FillPath(&linGrBrush, &path);
+                delete[] points;
+                delete[] colors;
+                goto Draw;
+                break;
+            }
+        }
+        for (int i = 0; i < def.rg_list.size(); i++) {
+            if (fill_id == def.rg_list[i].id) {
+                float* points = def.rg_list[i].get_point_list();
+                Color* colors = def.rg_list[i].get_color_list();
+                LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
+                linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                apply_transform(linGrBrush, def.rg_list[i].trans);
+                graphics.FillPath(&linGrBrush, &path);
+                delete[] points;
+                delete[] colors;
                 break;
             }
         }
@@ -787,6 +981,7 @@ void path::draw(Graphics& graphics, defs def) {
     else {
         graphics.FillPath(&fillBrush, &path);
     }
+    Draw:
     if (stroke_width != 0)
         graphics.DrawPath(&pen, &path);
     graphics.Restore(save);
@@ -804,4 +999,37 @@ void transform_image(Graphics& graphics, float angle, float width, float height,
     graphics.SetTransform(&transformMatrix);
 
     graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+}
+
+float* gradient::get_point_list() {
+    int size = stop_list.size();
+    if (stop_list[0].offset != 0) {
+		size++;
+	}
+    if (stop_list[stop_list.size() - 1].offset != 1) {
+		size++;
+	}
+	float* points = new float[size];
+    if (stop_list[0].offset != 0) {
+		points[0] = 0;
+	}
+    if (stop_list[stop_list.size() - 1].offset != 1) {
+		points[size - 1] = 1.0f;
+	}
+    for (int j = 0; j < stop_list.size(); j++) {
+        if (stop_list[0].offset != 0) {
+			points[j + 1] = stop_list[j].offset;
+		}
+		else
+			points[j] = stop_list[j].offset;
+	}
+	return points;
+}
+
+Color* gradient::get_color_list() {
+	Color* colors = new Color[stop_list.size()];
+    for (int j = 0; j < stop_list.size(); j++) {
+		colors[j] = Color(static_cast<float>(stop_list[j].stop_opacity * 255), stop_list[j].stop_color.red, stop_list[j].stop_color.green, stop_list[j].stop_color.blue);
+	}
+	return colors;
 }
