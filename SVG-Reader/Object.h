@@ -81,7 +81,6 @@ public:
 		stroke_opacity = fill_opacity = 1;
 	}
 	virtual void draw(Graphics& graphics, defs def) = 0;
-	virtual void get_max(float& max_width, float& max_height) = 0;
 };
 
 
@@ -89,14 +88,12 @@ class line : public shape {
 public:
 	point end;
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class rectangle : public shape {
 public:
 	float width, height;
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class ellipse : public shape {
@@ -106,7 +103,6 @@ public:
 		rx = ry = 0;
 	}
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class circle : public shape {
@@ -117,21 +113,18 @@ public:
 		r = 0;
 	}
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class polygon : public shape {
 public:
 	vector<point> p;
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class polyline : public shape{
 public:
 	vector<point> p;
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class text : public shape {
@@ -151,7 +144,6 @@ public:
 
 	}
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override;
 };
 
 class path : public shape {
@@ -165,9 +157,6 @@ public:
 	void read_single_point(string data, int& index, point& p);
 	float read_single_point(string data, int& index);
 	void draw(Graphics& graphics, defs def) override;
-	void get_max(float& max_width, float& max_height) override {
-		return;
-	}
 };
 
 class group {

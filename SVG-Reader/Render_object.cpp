@@ -42,17 +42,6 @@ VOID line::draw(Graphics& graphics, defs def) {
     graphics.Restore(save);
 }
 
-void line::get_max(float& max_width, float& max_height) {
-    if (start.x > max_width)
-        max_width = start.x;
-    else if (end.x > max_width)
-        max_width = end.x;
-    if (start.y > max_height)
-        max_width = start.y;
-    else if (end.y > max_height)
-        max_width = end.y;
-}
-
 VOID rectangle::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
@@ -104,13 +93,6 @@ VOID rectangle::draw(Graphics& graphics, defs def) {
     if (stroke_width != 0)
         graphics.DrawRectangle(&pen, start.x, start.y, width, height);
     graphics.Restore(save);
-}
-
-void rectangle::get_max(float& max_width, float& max_height) {
-    if (max_width > start.x + width)
-        max_width = start.x + width;
-    if (max_height > start.y + height)
-        max_height = start.y + height;
 }
 
 VOID circle::draw(Graphics& graphics, defs def) {
@@ -166,12 +148,6 @@ VOID circle::draw(Graphics& graphics, defs def) {
     graphics.Restore(save);
 }
 
-void circle::get_max(float& max_width, float& max_height) {
-    if (max_width > start.x + r)
-        max_width = start.x + r;
-    if (max_height > start.y + r)
-        max_height = start.y + r;
-}
 
 VOID ellipse::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
@@ -226,12 +202,6 @@ VOID ellipse::draw(Graphics& graphics, defs def) {
     graphics.Restore(save);
 }
 
-void ellipse::get_max(float& max_width, float& max_height) {
-    if (max_width > start.x + rx)
-        max_width = start.x + rx;
-    if (max_height > start.y + ry)
-        max_height = start.y + ry;
-}
 
 VOID polygon::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
@@ -291,14 +261,6 @@ VOID polygon::draw(Graphics& graphics, defs def) {
     graphics.Restore(save);
 }
 
-void polygon::get_max(float& max_width, float& max_height) {
-    for (int i = 0; i < p.size(); i++) {
-        if (p[i].x > max_width)
-            max_width = p[i].x;
-        if (p[i].y > max_height)
-            max_height = p[i].y;
-    }
-}
 
 VOID polyline::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
@@ -358,14 +320,6 @@ VOID polyline::draw(Graphics& graphics, defs def) {
     graphics.Restore(save);
 }
 
-void polyline::get_max(float& max_width, float& max_height) {
-    for (int i = 0; i < p.size(); i++) {
-        if (p[i].x > max_width)
-            max_width = p[i].x;
-        if (p[i].y > max_height)
-            max_height = p[i].y;
-    }
-}
 
 VOID text::draw(Graphics& graphics, defs def) {
     for (int i = 0; i < text_.length(); i++) {
@@ -428,14 +382,6 @@ VOID text::draw(Graphics& graphics, defs def) {
         graphics.DrawPath(&pen, &path);
     graphics.Restore(save);
 }
-
-void text::get_max(float& max_width, float& max_height) {
-    if (max_width > start.x + text_.length())
-        max_width = start.x + text_.length();
-    if (max_height > start.y - font_size)
-        max_height = start.y - font_size;
-}
-
 
 
 void path::read_single_point(string data, int& index, point& p) {

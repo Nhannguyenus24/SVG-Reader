@@ -849,7 +849,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 read_line(attribute->name(), attribute->value(), lin);
             }
-            lin->get_max(max_width, max_height);
             shapes.push_back(lin);
         }
         else if (name == "rect") {
@@ -862,7 +861,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
                 string attribute_value = attribute->value();
                 read_rectangle(attribute_name, attribute_value, rect);
             }
-            rect->get_max(max_width, max_height);
             shapes.push_back(rect);
         }
         else if (name == "ellipse") {
@@ -873,7 +871,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 read_ellipse(attribute->name(), attribute->value(), elli);
             }
-            elli->get_max(max_width, max_height);
             shapes.push_back(elli);
         }
         else if (name == "circle") {
@@ -884,7 +881,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 read_circle(attribute->name(), attribute->value(), cir);
             }
-            cir->get_max(max_width, max_height);
             shapes.push_back(cir);
         }
         else if (name == "polygon") {
@@ -895,7 +891,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 read_polygon(attribute->name(), attribute->value(), polyg);
             }
-            polyg->get_max(max_width, max_height);
             shapes.push_back(polyg);
         }
         else if (name == "polyline") {
@@ -906,7 +901,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 read_polyline(attribute->name(), attribute->value(), polyl);
             }
-            polyl->get_max(max_width, max_height);
             shapes.push_back(polyl);
         }
         else if (name == "text") {
@@ -918,7 +912,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
                 read_text(attribute->name(), attribute->value(), tex);
             }
             tex->text_ = node->value();
-            tex->get_max(max_width, max_height);
             shapes.push_back(tex);
         }
         else if (name == "path") {
@@ -929,7 +922,6 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
 				read_path(attribute->name(), attribute->value(), p);
 			}
-			p->get_max(max_width, max_height);
 			shapes.push_back(p);
         }
         else if (name == "g") {
