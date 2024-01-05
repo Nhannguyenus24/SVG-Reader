@@ -970,6 +970,7 @@ void path::draw(Graphics& graphics, defs def) {
                 Color* colors = def.rg_list[i].get_color_list();
                 LinearGradientBrush linGrBrush(PointF(def.rg_list[i].center.x - def.rg_list[i].r, def.rg_list[i].center.y - def.rg_list[i].r), PointF(def.rg_list[i].center.x + def.rg_list[i].r, def.rg_list[i].center.y + def.rg_list[i].r), colors[0], colors[def.rg_list[i].stop_list.size() - 1]);
                 linGrBrush.SetWrapMode(WrapModeTileFlipXY);
+                linGrBrush.SetInterpolationColors(colors, points, def.rg_list[i].stop_list.size());
                 apply_transform(linGrBrush, def.rg_list[i].trans);
                 graphics.FillPath(&linGrBrush, &path);
                 delete[] points;
