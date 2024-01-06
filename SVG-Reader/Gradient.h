@@ -1,3 +1,4 @@
+//Gradient.h declares hierarchy of classes for storing gradient information and related functions.
 #ifndef GRADIENT_H
 #define GRADIENT_H
 #include "Viewbox.h"
@@ -15,6 +16,7 @@ public:
 class Gradient {
 public:
 	vector<stop> stop_list;
+	multi_transform trans;
 	float* get_point_list();
 	Color* get_color_list();
 };
@@ -23,7 +25,6 @@ class linearGradient : public Gradient {
 public:
 	string id;
 	point start, end;
-	multi_transform trans;
 	string units;
 	bool percentage;
 };
@@ -33,7 +34,6 @@ public:
 	string id;
 	point center;
 	float r, fx, fy;
-	multi_transform trans;
 	string units, xlink_href;
 	radialGradient() {
 		r = fx = fy = 0;

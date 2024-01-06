@@ -1,46 +1,4 @@
 ﻿  BaseComponent.cpp
-C:\OOP\SVG-Reader\SVG-Reader\BaseComponent.cpp(59,26): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\BaseComponent.cpp(63,28): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\BaseComponent.cpp(67,27): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-  Gradient.cpp
-C:\OOP\SVG-Reader\SVG-Reader\Gradient.cpp(89,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Gradient.cpp(116,72): warning C4244: 'argument': conversion from 'float' to 'BYTE', possible loss of data
-  Group.cpp
-  Path.cpp
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(21,34): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(253,25): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(276,58): warning C4305: '-=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(279,58): warning C4305: '+=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(281,139): warning C4244: 'argument': conversion from 'long double' to 'Gdiplus::REAL', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(281,71): warning C4244: 'argument': conversion from 'long double' to 'Gdiplus::REAL', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(295,25): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(318,58): warning C4305: '-=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(321,58): warning C4305: '+=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(323,139): warning C4244: 'argument': conversion from 'long double' to 'Gdiplus::REAL', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(323,71): warning C4244: 'argument': conversion from 'long double' to 'Gdiplus::REAL', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(582,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Path.cpp(596,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
   Shapes_Reader.cpp
-  Shapes_Render.cpp
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(46,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(99,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(153,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(201,38): warning C4244: 'argument': conversion from 'float' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(201,30): warning C4244: 'argument': conversion from 'float' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(211,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(259,38): warning C4244: 'argument': conversion from 'float' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(259,30): warning C4244: 'argument': conversion from 'float' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(270,96): warning C4267: 'argument': conversion from 'size_t' to 'INT', possible loss of data
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(338,16): warning C4305: '=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\Shapes_Render.cpp(343,17): warning C4305: '=': truncation from 'double' to 'float'
-  SVG-Reader.cpp
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(162,29): warning C4305: '*=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(166,29): warning C4305: '*=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(234,29): warning C4305: '*=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(239,29): warning C4305: '*=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(267,25): warning C4305: '*=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(269,25): warning C4305: '*=': truncation from 'double' to 'float'
-C:\OOP\SVG-Reader\SVG-Reader\SVG-Reader.cpp(143,11): warning C4101: 'last_mouse_position': unreferenced local variable
-  Transform.cpp
   Generating Code...
   SVG-Reader.vcxproj -> C:\OOP\SVG-Reader\x64\Debug\SVG-Reader.exe

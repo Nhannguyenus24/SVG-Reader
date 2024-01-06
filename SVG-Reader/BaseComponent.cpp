@@ -1,4 +1,6 @@
-﻿#include"BaseComponent.h"
+﻿//BaseComponent.cpp contains all functions for read color and point and some support functions for general use
+#include"BaseComponent.h"
+//support functions
 string trim(string str) {
     str.erase(remove_if(str.begin(), str.end(), ::isspace), str.end());
     return str;
@@ -48,24 +50,25 @@ float clarifyFloat(string s) {
 //read color funtion
 color read_RGB(string value) {
     color colour;
+    //read rgb
     if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') {
-
         stringstream ss(value);
         string temp = "";
         getline(ss, temp, '(');
         getline(ss, temp, ',');
         if (stof(temp) > 255)
             temp = "255";
-        colour.red = stof(temp);
+        colour.red = stoi(temp);
         getline(ss, temp, ',');
         if (stof(temp) > 255)
             temp = "255";
-        colour.green = stof(temp);
+        colour.green = stoi(temp);
         getline(ss, temp, ')');
         if (stof(temp) > 255)
             temp = "255";
-        colour.blue = stof(temp);
+        colour.blue = stoi(temp);
     }
+    //read hex
     else if (value[0] == '#') {
         unsigned int hexValue;
         if (value.length() == 4) {
@@ -73,17 +76,16 @@ color read_RGB(string value) {
             value = "#" + string(1, a1) + string(1, a1) + string(1, a2) + string(1, a2) + string(1, a3) + string(1, a3);
         }
         istringstream(value.substr(1)) >> hex >> hexValue;
-
         colour.red = (hexValue >> 16) & 0xFF;
         colour.green = (hexValue >> 8) & 0xFF;
         colour.blue = hexValue & 0xFF;
     }
+    //read color name and convert to rgb
     else {
-        for (int i = 0; i < value.length(); i++) {
-            if (value[i] >= 'A' && value[i] <= 'Z') {
-                value[i] += 32;
-            }
-        }
+        //convert to lower case using string library
+        transform(value.begin(), value.end(), value.begin(), ::tolower);
+
+        //read rgb.txt file and find the color name then return rgb value
         ifstream file("rgb.txt");
         if (file.is_open()) {
             string line;
@@ -111,16 +113,17 @@ color read_RGB(string value) {
     return colour;
 }
 
-//read point function
+//read points and convert to vector of points
 vector<point> read_points(string value) {
     vector<point> points;
 
-    // Xóa khoảng trắng ở đầu và cuối chuỗi
+    //erase all space in string
     value = std::regex_replace(value, std::regex("^\\s+|\\s+$"), "");
 
     stringstream ss(value);
     string temp = "";
     string pointStr;
+    //read all points
     while (getline(ss, pointStr, ' ')) {
         point p;
         if (pointStr.find(',') == string::npos) {
@@ -138,6 +141,5 @@ vector<point> read_points(string value) {
             points.push_back(p);
         }
     }
-
     return points;
 }

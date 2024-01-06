@@ -3,7 +3,6 @@
 #include"Group.h"
 #include "resource.h"
 #define MAX_LOADSTRING 100
-
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
@@ -37,13 +36,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, INT iCmdShow
     LPWSTR* szArgList = CommandLineToArgvW(GetCommandLineW(), &argCount);
     if (argCount > 1)
     {
-        // Tham số dòng lệnh argv[1] là đường dẫn đến file SVG
+        // cmd args are UTF-16, convert to UTF-8
         wstring_convert<codecvt_utf8<wchar_t>, wchar_t> converter;
         path = converter.to_bytes(szArgList[1]);
     }
 
     LocalFree(szArgList);
-
 
     // Perform application initialization:
     if (!InitInstance(hInstance, iCmdShow))
@@ -69,8 +67,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, INT iCmdShow
 }
 
 
-
-//
 //  FUNCTION: MyRegisterClass()
 //
 //  PURPOSE: Registers the window class.
@@ -146,7 +142,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     vector<shape*> shapes = read_file(path, max_width, max_height, def, vb);
     switch (message)
     {
-    case WM_COMMAND:
+    case WM_COMMAND: //Menu commands
         {
             int wmId = LOWORD(wParam);
             // Parse the menu selections:
@@ -202,30 +198,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_KEYDOWN:
+    case WM_KEYDOWN: //Keyboard commands
     {
         switch (wParam)
         {
-            case VK_UP:
-                // Xử lý mũi tên lên
+            case VK_UP: // Up arrow key pressed
                 scroll_y -= 20;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case VK_DOWN:
-                // Xử lý mũi tên xuống
+            case VK_DOWN: // Down arrow key pressed
                 scroll_y += 20;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case VK_LEFT:
-                // Xử lý mũi tên trái
+            case VK_LEFT: // Left arrow key pressed
                 scroll_x -= 20;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case VK_RIGHT:
-                // Xử lý mũi tên phải
+            case VK_RIGHT: // Right arrow key pressed
                 scroll_x += 20;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
@@ -240,18 +232,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case 'r': case 'R':
+            case 'r': case 'R': // Rotate right
                 Rotate += 30;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case 'l': case 'L':
+            case 'l': case 'L': // Rotate left
                 Rotate -= 30;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
                 break;
-            case 'd': case 'D':
+            case 'd': case 'D': // Default
                 scale = 1;
                 Rotate = 0;
                 scroll_x = 0;
@@ -273,7 +265,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
         {
         DrawAgain:
-            
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Graphics graphics(hdc);
@@ -284,7 +275,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 shapes[i]->draw(graphics, def);
             }
             EndPaint(hWnd, &ps);
-            
         }
         break;
     case WM_DESTROY:

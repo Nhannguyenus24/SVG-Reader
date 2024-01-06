@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by SVG-Reader.rc
 //
+//define value for menu buttons
 #define IDC_MYICON                      2
 #define IDD_SVGREADER_DIALOG            102
 #define IDS_APP_TITLE                   103

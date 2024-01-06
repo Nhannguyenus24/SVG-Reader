@@ -1,5 +1,6 @@
 ﻿//Shapes_Render.cpp contains the definitions of the methods of Shape class hierarchy to render the shapes on the graphics object.
 #include"Shapes.h"
+//in terms of holding Gradient, all the information of radial gradient is passed as linear gradient to process
 VOID line::draw(Graphics& graphics, defs def) {
     GraphicsState save = graphics.Save();
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
@@ -24,6 +25,7 @@ VOID rectangle::draw(Graphics& graphics, defs def) {
     Pen pen(Color(static_cast<int>(stroke_opacity * 255), stroke_color.red, stroke_color.green, stroke_color.blue), static_cast<REAL>(stroke_width));
     SolidBrush fillBrush(Color(static_cast<int>(fill_opacity * 255), fill_color.red, fill_color.green, fill_color.blue));
     int index = 0;
+    //apply transformations
     for (int i = 0; i < trans.types.size(); i++) {
         if (trans.types[i] == "translate")
             graphics.TranslateTransform(trans.values[index], trans.values[index + 1]);
@@ -35,6 +37,7 @@ VOID rectangle::draw(Graphics& graphics, defs def) {
         if (trans.types[i] == "rotate")
             index--;
     }
+    //apply gradient
     if (fill_id != "") {
         for (int i = 0; i < def.lg_list.size(); i++) {
             if (fill_id == def.lg_list[i].id) {
@@ -329,17 +332,17 @@ VOID text::draw(Graphics& graphics, defs def) {
     FontFamily fontFamily(wFontFamily.c_str());
     Font font(&fontFamily, static_cast<REAL>(font_size), italic ? FontStyleItalic : FontStyleRegular, UnitPixel);
 
-    StringFormat stringFormat; // Tạo một biến StringFormat
+    StringFormat stringFormat; // Create a StringFormat object with the each line of text, and the block
     if (text_anchor == "middle") {
-        stringFormat.SetAlignment(StringAlignmentCenter); // Căn giữa
+        stringFormat.SetAlignment(StringAlignmentCenter); // Center alignment
     }
     else if (text_anchor == "end") {
-        stringFormat.SetAlignment(StringAlignmentFar); // Căn giữa phải
+        stringFormat.SetAlignment(StringAlignmentFar); // Right and center alignment
         rate = 0.15;
     }
     else
     {
-        stringFormat.SetAlignment(StringAlignmentNear); // Căn giữa trái
+        stringFormat.SetAlignment(StringAlignmentNear); // Left and center alignment
         rate = -0.15;
     }
     PointF pointF(static_cast<REAL>(start.x + dx + rate * font_size), static_cast<REAL>(start.y + dy - 0.9 * font_size));

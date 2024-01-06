@@ -1,18 +1,17 @@
-﻿#ifndef BASECOMPONENT_H
+﻿//BaseComponent.h contains all libraries and define base class for all components: Color and Point
+#ifndef BASECOMPONENT_H
 #define BASECOMPONENT_H
-
 #include <iostream>
-#include "rapidxml.hpp"
+#include "rapidxml.hpp" // RapidXML library for read XML file
 #include <fstream>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <windows.h>
 #include <objidl.h>
-#include <gdiplus.h>
-#include <locale>  // Để sử dụng wstring_convert và codecvt_utf8
-#include <codecvt> // Để sử dụng codecvt_utf8
-//#include "Object.h"
+#include <gdiplus.h> //for GDI+ library
+#include <locale>  // for std::wstring_convert and codecvt_utf8
+#include <codecvt> // for codecvt_utf8
 #include <algorithm>
 #include <regex>
 #include <unordered_map>

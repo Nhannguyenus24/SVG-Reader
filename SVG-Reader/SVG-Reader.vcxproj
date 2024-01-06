@@ -139,7 +139,6 @@
     <ClInclude Include="rapidxml.hpp" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Shapes.h" />
-    <ClInclude Include="SVG-Reader.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Viewbox.h" />

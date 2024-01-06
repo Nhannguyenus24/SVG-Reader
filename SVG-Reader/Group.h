@@ -1,4 +1,6 @@
-﻿#ifndef GROUP_H
+﻿//Group.h contains the class group and the function read_file to read the svg file and return the shapes in the file
+//default Group is also consider as whole SVG image
+#ifndef GROUP_H
 #define GROUP_H
 #include"Path.h"
 class group {

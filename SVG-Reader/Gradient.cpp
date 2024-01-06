@@ -1,3 +1,4 @@
+//Gradient.cpp contains functions for reading and rendering gradients in detail.
 #include"Gradient.h"
 //read function
 void readStop(string name, string value, stop& stop) {
@@ -93,6 +94,7 @@ float* Gradient::get_point_list() {
     if (stop_list[stop_list.size() - 1].offset != 1) {
         size++;
     }
+
     float* points = new float[size];
     if (stop_list[0].offset != 0) {
         points[0] = 0;
@@ -100,6 +102,8 @@ float* Gradient::get_point_list() {
     if (stop_list[stop_list.size() - 1].offset != 1) {
         points[size - 1] = 1.0f;
     }
+
+    //get points
     for (int j = 0; j < stop_list.size(); j++) {
         if (stop_list[0].offset != 0) {
             points[j + 1] = stop_list[j].offset;
@@ -110,9 +114,11 @@ float* Gradient::get_point_list() {
     return points;
 }
 
+//cast color list to Color* for render
 Color* Gradient::get_color_list() {
     Color* colors = new Color[stop_list.size()];
     for (int j = 0; j < stop_list.size(); j++) {
+        //
         colors[j] = Color(static_cast<float>(stop_list[j].stop_opacity * 255), stop_list[j].stop_color.red, stop_list[j].stop_color.green, stop_list[j].stop_color.blue);
     }
     return colors;

@@ -66,6 +66,7 @@ void Path::read_single_point(string data, int& index, point& p) {
     bool s1 = false, s2 = false, accept = false;
     bool negative1 = false, negative2 = false;
     while (true) {
+        //check if the index is out of range
         if ((data[index] > '9' || data[index] < '0') && data[index] != '.' && data[index] != 'e') {
             if (s1 == true) {
                 s1 = false;

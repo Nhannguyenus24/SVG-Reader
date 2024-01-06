@@ -1,3 +1,4 @@
+//Path.h contains the class Path which inherits from shape and the function read_path
 #ifndef PATH_H
 #define PATH_H
 #include"Shapes.h"

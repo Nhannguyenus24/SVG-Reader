@@ -1,19 +1,21 @@
-﻿#include"Group.h"
+﻿//Group.cpp contains the function read_file to read the svg file and return the shapes in the file
+#include"Group.h"
 vector<shape*> read_file(string file_name, float& max_width, float& max_height, defs& def, viewBox& vb) {
     vector<shape*> shapes;
     ifstream file(file_name);
-    // Đọc nội dung của tệp vào một vector<char>
+    // Read and save the content of the file to a buffer as vector<char>
     vector<char> buffer((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-    buffer.push_back('\0'); // Thêm ký tự kết thúc chuỗi
+    buffer.push_back('\0'); // adding null character at the end
 
-    // Khai báo một tài liệu XML để lưu trữ cấu trúc tệp SVG
+    // Declaring document object
     xml_document<> doc;
 
-    // Phân tích nội dung tệp vào tài liệu XML
+    // Analyzing the buffer
     doc.parse<0>(&buffer[0]);
 
-    // Lấy nút gốc (root node) của tài liệu
+    // Get the root node of the XML file
     xml_node<>* root = doc.first_node("svg");
+    // Get the attributes of the root node
     for (xml_attribute<>* attribute = root->first_attribute(); attribute; attribute = attribute->next_attribute()) {
         string attribute_name = attribute->name();
         string attribute_value = attribute->value();
@@ -32,6 +34,7 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height, 
         }
     }
     max_width = 0, max_height = 0;
+    //suppose that the default group is the whole svg image
     group g;
     g.traversal_group(root, max_width, max_height, shapes, def);
     for (int i = 0; i < def.rg_list.size(); i++) {
@@ -47,19 +50,28 @@ vector<shape*> read_file(string file_name, float& max_width, float& max_height, 
     }
     return shapes;
 }
+
+//function to read the attributes of the group node
 void group::traversal_group(xml_node<>* root, float& max_width, float& max_height, vector<shape*>& shapes, defs& def) {
+    //handling null root
+    if (!root)
+		return;
     for (xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
         string name = node->name();
+        // Get the attributes of the node by iterating over them and save them
+        //get line attributes
         if (name == "line") {
             line* lin = new line();
             for (const auto& attribute : attributes) {
                 read_line(attribute.first, attribute.second, lin);
             }
+
             for (xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
                 read_line(attribute->name(), attribute->value(), lin);
             }
             shapes.push_back(lin);
         }
+        //get rectangle attributes
         else if (name == "rect") {
             rectangle* rect = new rectangle();
             for (const auto& attribute : attributes) {
@@ -72,6 +84,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             shapes.push_back(rect);
         }
+        //get ellipse attributes
         else if (name == "ellipse") {
             ellipse* elli = new ellipse();
             for (const auto& attribute : attributes) {
@@ -82,6 +95,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             shapes.push_back(elli);
         }
+        //get circle attributes
         else if (name == "circle") {
             circle* cir = new circle();
             for (const auto& attribute : attributes) {
@@ -92,6 +106,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             shapes.push_back(cir);
         }
+        //get polygon attributes
         else if (name == "polygon") {
             polygon* polyg = new polygon();
             for (const auto& attribute : attributes) {
@@ -102,6 +117,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             shapes.push_back(polyg);
         }
+        //get polyline attributes
         else if (name == "polyline") {
             polyline* polyl = new polyline();
             for (const auto& attribute : attributes) {
@@ -112,6 +128,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             shapes.push_back(polyl);
         }
+        //get text attributes
         else if (name == "text") {
             text* tex = new text();
             for (const auto& attribute : attributes) {
@@ -123,6 +140,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             tex->text_ = node->value();
             shapes.push_back(tex);
         }
+        //get path attributes
         else if (name == "path") {
             Path* p = new Path();
             for (const auto& attribute : attributes) {
@@ -133,6 +151,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             shapes.push_back(p);
         }
+        //get group attributes
         else if (name == "g") {
             group new_group;
             for (const auto& attribute : this->attributes) {
@@ -155,6 +174,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             new_group.traversal_group(node, max_width, max_height, shapes, def);
         }
+        //get defs attributes (contain linearGradient and radialGradient)
         else if (name == "defs") {
             for (rapidxml::xml_node<>* child = node->first_node(); child; child = child->next_sibling()) {
                 string child_name = child->name();
@@ -195,6 +215,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
 
             }
         }
+        //get linearGradient attributes
         else if (name == "linearGradient") {
             linearGradient lg;
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {
@@ -212,6 +233,7 @@ void group::traversal_group(xml_node<>* root, float& max_width, float& max_heigh
             }
             def.lg_list.push_back(lg);
         }
+        //get radialGradient attributes
         else if (name == "radialGradient") {
             radialGradient rg;
             for (rapidxml::xml_attribute<>* attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute()) {

@@ -1,5 +1,6 @@
 //Shapes_Reader.cpp contains functions to read Shape hierarchy from SVG file.
 #include"Shapes.h"
+//in each function, we read the value of an attribute of a shape (color, stroke-width, etc.) and assign it to the corresponding field of the shape.
 void read_line(string name, string value, line* line) {
     if (name == "stroke-opacity") {
         line->stroke_opacity = stof(value);
@@ -35,7 +36,6 @@ void read_line(string name, string value, line* line) {
     else if (name == "transform") {
         read_transform(value, line->trans);
     }
-
     else if (name == "style") {
         istringstream iss(trim(value));
         string tmp;
@@ -62,9 +62,11 @@ void read_rectangle(string name, string value, rectangle* rect) {
         if (value == "none" || value == "transparent") {
             rect->fill_opacity = 0;
         }
-        else if (value[0] == 'u' && value[1] == 'r' && value[2] == 'l') {
-            rect->fill_id = value.substr(5, value.length() - 6);
-        }
+        else if (value.find("url") != string::npos) {
+			size_t start = value.find("#");
+			size_t end = value.find(")");
+			rect->fill_id = value.substr(start + 1, end - start - 1);
+		}
         else
             rect->fill_color = read_RGB(value);
     }
@@ -103,7 +105,7 @@ void read_rectangle(string name, string value, rectangle* rect) {
     else if (name == "transform") {
         read_transform(value, rect->trans);
     }
-
+    //style
     else if (name == "style") {
         istringstream iss(trim(value));
         string tmp;

@@ -1,18 +1,19 @@
-﻿//Transform.cpp contain defintion of functions related to transform attribute
+﻿//Transform.cpp contain defintion of functions related to transform attributes
 #include"Transform.h"
 void transform_image(Graphics& graphics, float angle, float width, float height, float scroll_x, float scroll_y, float scale) {
     PointF center(static_cast<REAL>((width / 2 + scroll_x) * scale), static_cast<REAL>((height / 2 + scroll_y) * scale));
 
-    // Áp dụng các biến đổi
+    // applying all the transformations
     Matrix transformMatrix;
-    transformMatrix.Translate(scroll_x, scroll_y); // Dịch chuyển trước
-    transformMatrix.Scale(scale, scale);           // Sau đó thay đổi tỷ lệ
-    transformMatrix.RotateAt(angle, center);       // Cuối cùng, xoay tại trọng tâm
+    transformMatrix.Translate(scroll_x, scroll_y); // Translate first
+    transformMatrix.Scale(scale, scale);           // Then scale
+    transformMatrix.RotateAt(angle, center);       // Finally rotate
 
     graphics.SetTransform(&transformMatrix);
 
     graphics.SetSmoothingMode(SmoothingModeAntiAlias);
 }
+
 void read_transform(string value, multi_transform& tr) {
     string temp = value;
     string vessel1 = "", vessel2 = "";
@@ -92,6 +93,7 @@ void read_transform(string value, multi_transform& tr) {
         }
     }
 }
+
 void apply_transform(LinearGradientBrush& lgbrush, multi_transform trans) {
     int index = 0;
     if (trans.types.size() == 0)
