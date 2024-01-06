@@ -27,10 +27,28 @@
     <ClInclude Include="SVG-Reader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Object.h">
+    <ClInclude Include="BaseComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rapidxml.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gradient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Group.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,10 +56,25 @@
     <ClCompile Include="SVG-Reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Read_file.cpp">
+    <ClCompile Include="Shapes_Reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Render_object.cpp">
+    <ClCompile Include="Shapes_Render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Group.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gradient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

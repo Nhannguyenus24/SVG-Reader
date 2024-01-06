@@ -1,6 +1,6 @@
-﻿// SVG-Reader.cpp : Defines the entry point for the application.
-//
-#include "Object.h"
+﻿//SVG-Reader.cpp : Defines the entry point for the application.
+//include main function
+#include"Group.h"
 #include "resource.h"
 #define MAX_LOADSTRING 100
 
@@ -13,7 +13,7 @@ float Rotate = 0;
 float scroll_x = 0;
 float scroll_y = 0;
 float max_width = 0, max_height = 0;
-string path = "Firefox_logo,_2019.svg";
+string path = "sample.svg";
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -230,12 +230,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case 'i': case 'I':
+            case 'i': case 'I': // Zoom in
                 scale *= 1.1;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
                 break;
-            case 'o': case 'O':
+            case 'o': case 'O': // Zoom out
                 scale *= 0.9;
                 InvalidateRect(hWnd, NULL, TRUE);
                 goto DrawAgain;
